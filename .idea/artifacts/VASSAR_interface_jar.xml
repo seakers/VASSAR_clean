@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="VASSAR-interface:jar">
+    <output-path>$PROJECT_DIR$/dist</output-path>
+    <root id="archive" name="VASSAR-interface.jar">
+      <element id="module-output" name="VASSAR_clean" />
+    </root>
+  </artifact>
+</component>
