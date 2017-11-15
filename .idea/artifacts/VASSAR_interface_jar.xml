@@ -3,6 +3,10 @@
     <output-path>$PROJECT_DIR$/dist</output-path>
     <root id="archive" name="VASSAR-interface.jar">
       <element id="module-output" name="VASSAR_clean" />
+      <element id="library" level="project" name="jess" />
+      <element id="library" level="project" name="net.sourceforge.jexcelapi:jxl:2.6.12" />
+      <element id="library" level="project" name="org.apache.commons:commons-lang3:3.6" />
+      <element id="library" level="project" name="Simple Logging Facade for Java:1.7.25" />
     </root>
   </artifact>
 </component>
