@@ -80,8 +80,8 @@ public class GenericTask implements Callable {
             r.eval("(defadvice before (create$ >= <= < >) (foreach ?xxx $?argv (if (eq ?xxx nil) then (return FALSE))))");
             r.eval("(defadvice before (create$ sqrt + * **) (foreach ?xxx $?argv (if (eq ?xxx nil) then (bind ?xxx 0))))");
 
-            r.eval("(watch rules)");
-            r.eval("(facts)");
+            //r.eval("(watch rules)");
+            //r.eval("(facts)");
 
             r.setFocus("MANIFEST0");
             r.run();
@@ -101,10 +101,27 @@ public class GenericTask implements Callable {
             r.setFocus("CAPABILITIES-GENERATE");
             r.run();
 
+            r.setFocus("CAPABILITIES-UPDATE");
+            r.run();
+
             r.setFocus("SYNERGIES");
             r.run();
 
             //Revisit times
+
+            // Check if all of the orbits in the original formulation are used
+            boolean[] orbitsUsed = new boolean[5];
+            String[] list = {"LEO-600-polar-NA", "SSO-600-SSO-AM", "SSO-600-SSO-DD", "SSO-800-SSO-DD", "SSO-800-SSO-PM"};
+            for (int i = 0; i < list.length; i++) {
+                orbitsUsed[i] = false;
+                for (String orb: params.orbitList) {
+                    if (list[i].equalsIgnoreCase(orb)) {
+                        orbitsUsed[i] = true;
+                        break;
+                    }
+                }
+            }
+
             int javaAssertedFactID = 1;
 
             for (String param: params.measurementsToInstruments.keySet()) {
@@ -116,10 +133,28 @@ public class GenericTask implements Callable {
                         int tmp = thefovs.get(i).intValue(r.getGlobalContext());
                         fovs[i] = String.valueOf(tmp);
                     }
-                    String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs,"  ");
+
+                    // Re-assign fovs based on the original orbit formulation
+                    if (thefovs.size() < 5) {
+                        String[] new_fovs = new String[5];
+                        int cnt = 0;
+                        for (int i = 0; i < 5; i++) {
+                            if (orbitsUsed[i]) {
+                                new_fovs[i] = fovs[cnt];
+                                cnt++;
+                            }
+                            else {
+                                new_fovs[i] = "-1";
+                            }
+                        }
+                        fovs = new_fovs;
+                    }
+
+                    String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
 
                     HashMap<String, Double> therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
-                    String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") (avg-revisit-time-global# " + therevtimes.get("Global") + ") "
+                    String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
+                            + "(avg-revisit-time-global# " + therevtimes.get("Global") + ") "
                             + "(avg-revisit-time-US# " + therevtimes.get("US") + ")"
                             + "(factHistory J" + javaAssertedFactID + ")))";
                     javaAssertedFactID++;
@@ -161,7 +196,7 @@ public class GenericTask implements Callable {
             if ((params.reqMode.equalsIgnoreCase("CRISP-ATTRIBUTES")) || (params.reqMode.equalsIgnoreCase("FUZZY-ATTRIBUTES"))) {
                 result = aggregate_performance_score_facts(r, m, qb);
             }
-            r.eval("(facts)");
+            //r.eval("(facts)");
 
             //////////////////////////////////////////////////////////////
 

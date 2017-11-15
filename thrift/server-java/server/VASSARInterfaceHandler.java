@@ -73,11 +73,39 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         double cost = result.getCost();
         double science = result.getScience();
         List<Double> outputs = new ArrayList<>();
-        outputs.add(cost);
         outputs.add(science);
+        outputs.add(cost);
         
         System.out.println("Performance Score: " + science + ", Cost: " + cost);
         return new BinaryInputArchitecture(0, boolList, outputs);
+    }
+
+    public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList) {
+        String bitString = "";
+        for (Boolean b: boolList) {
+            bitString += b ? "1" : "0";
+        }
+
+        List<BinaryInputArchitecture> out = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            // Generate a new architecture
+            Architecture architecture = new Architecture(bitString, 1);
+
+            // Evaluate the architecture
+            Result result = AE.evaluateArchitecture(architecture,"Slow");
+
+            // Save the score and the cost
+            double cost = result.getCost();
+            double science = result.getScience();
+            List<Double> outputs = new ArrayList<>();
+            outputs.add(science);
+            outputs.add(cost);
+            BinaryInputArchitecture arch = new BinaryInputArchitecture(0, boolList, outputs);
+            out.add(arch);
+        }
+
+        return out;
     }
 
     public List<String> getCritique(List<Boolean> boolList) {
