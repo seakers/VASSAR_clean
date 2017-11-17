@@ -80,15 +80,18 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return new BinaryInputArchitecture(0, boolList, outputs);
     }
 
+    @Override
     public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList) {
         String bitString = "";
         for (Boolean b: boolList) {
             bitString += b ? "1" : "0";
         }
 
+        ArrayList<String> samples = randomLocalChange(bitString, 4);
+
         List<BinaryInputArchitecture> out = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (String sample: samples) {
             // Generate a new architecture
             Architecture architecture = new Architecture(bitString, 1);
 
@@ -101,10 +104,42 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
             List<Double> outputs = new ArrayList<>();
             outputs.add(science);
             outputs.add(cost);
-            BinaryInputArchitecture arch = new BinaryInputArchitecture(0, boolList, outputs);
+
+            System.out.println("bitString: " + sample + ", Science: " + science + ", Cost: " + cost);
+
+            BinaryInputArchitecture arch = new BinaryInputArchitecture(0, bitString2BoolArray(sample), outputs);
             out.add(arch);
         }
 
+        return out;
+    }
+
+    private ArrayList<String> randomLocalChange(String bitString, int n){
+        Random rand = new Random();
+        int numVars = params.orbitList.length * params.instrumentList.length;
+
+        ArrayList<String> out = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            int k = rand.nextInt(numVars);
+
+            StringBuilder tempBitString = new StringBuilder(bitString);
+            if (bitString.charAt(k) == '1') {
+                tempBitString.setCharAt(k, '0');
+            }
+            else {
+                tempBitString.setCharAt(k, '1');
+            }
+            out.add(tempBitString.toString());
+        }
+        return out;
+    }
+
+    private List<Boolean> bitString2BoolArray(String bitString){
+        List<Boolean> out = new ArrayList<>();
+        for (int i = 0; i < bitString.length(); i++) {
+            out.add(bitString.charAt(i) == '1');
+        }
         return out;
     }
 
