@@ -1150,6 +1150,7 @@ public class JessInitializer {
         }
         catch (Exception e) {
             System.out.println("EXC in loadSynergyRules " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

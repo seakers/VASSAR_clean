@@ -78,9 +78,9 @@ public class Params {
     // Intermediate results
     public int nof; //number of facts
     public int nor; //number of rules
-    public HashMap <String, Defrule> rulesDefruleMap;
-    public HashMap <Integer,String> rulesIDtoNameMap;
-    public HashMap <String, Integer> rulesNametoIDMap;
+    public HashMap<String, Defrule> rulesDefruleMap;
+    public HashMap<Integer, String> rulesIDtoNameMap;
+    public HashMap<String, Integer> rulesNametoIDMap;
     public HashMap<String, HashMap<String, ArrayList<String>>> requirementRules;
     public HashMap<String, String> measurementsToSubobjectives;
     public HashMap<String, String> measurementsToObjectives;

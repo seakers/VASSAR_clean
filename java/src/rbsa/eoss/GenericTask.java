@@ -4,6 +4,7 @@ import jess.*;
 import rbsa.eoss.local.Params;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.ArrayList;
 import java.util.TreeMap;
@@ -196,7 +197,6 @@ public class GenericTask implements Callable {
             if ((params.reqMode.equalsIgnoreCase("CRISP-ATTRIBUTES")) || (params.reqMode.equalsIgnoreCase("FUZZY-ATTRIBUTES"))) {
                 result = aggregate_performance_score_facts(r, m, qb);
             }
-            //r.eval("(facts)");
 
             //////////////////////////////////////////////////////////////
 
