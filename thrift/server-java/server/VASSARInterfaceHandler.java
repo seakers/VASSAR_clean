@@ -93,7 +93,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         for (String sample: samples) {
             // Generate a new architecture
-            Architecture architecture = new Architecture(bitString, 1);
+            Architecture architecture = new Architecture(sample, 1);
 
             // Evaluate the architecture
             Result result = AE.evaluateArchitecture(architecture,"Slow");
