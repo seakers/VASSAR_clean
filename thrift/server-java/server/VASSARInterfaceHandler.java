@@ -81,13 +81,13 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
     }
 
     @Override
-    public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList) {
+    public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList, int experiment_stage) {
         String bitString = "";
         for (Boolean b: boolList) {
             bitString += b ? "1" : "0";
         }
 
-        ArrayList<String> samples = randomLocalChange(bitString, 4);
+        ArrayList<String> samples = randomLocalChange(bitString, 4, experiment_stage);
 
         List<BinaryInputArchitecture> out = new ArrayList<>();
 
@@ -114,7 +114,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return out;
     }
 
-    private ArrayList<String> randomLocalChange(String bitString, int n){
+    private ArrayList<String> randomLocalChange(String bitString, int n, int experiment_stage){
         Random rand = new Random();
         int numVars = params.orbitList.length * params.instrumentList.length;
 
@@ -122,6 +122,9 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         for (int i = 0; i < n; i++) {
             int k = rand.nextInt(numVars);
+            if (experiment_stage > 0) {
+                k = params.instrumentList.length*(k/params.instrumentList.length) + 6*(experiment_stage - 1) + (k%12)/2;
+            }
 
             StringBuilder tempBitString = new StringBuilder(bitString);
             if (bitString.charAt(k) == '1') {
