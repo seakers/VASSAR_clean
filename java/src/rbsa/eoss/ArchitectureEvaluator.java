@@ -30,6 +30,7 @@ public class ArchitectureEvaluator {
     private ArrayList<Future<Result>> futures;
     private HashMap<ArrayList<String>, HashMap<String, Double>> scores;
     private HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>> subobjScores;
+    private HashMap<String, NDSM> dsmMap;
     
     private ArchitectureEvaluator() {
         reset();
@@ -45,6 +46,9 @@ public class ArchitectureEvaluator {
         if (!params.runMode.equalsIgnoreCase("update_scores")) {
             setScores(params.scores);
             setSubobjScores(params.subobjScores);
+        }
+        if (!params.runMode.equalsIgnoreCase("update_dsms")) {
+            setDsmMap(params.allDsms);
         }
     }
 
@@ -228,5 +232,13 @@ public class ArchitectureEvaluator {
         if (hmap.get(orbit) == null) {
             hmap.put(orbit, scores);
         }
+    }
+
+    public HashMap<String, NDSM> getDsmMap() {
+        return dsmMap;
+    }
+
+    public void setDsmMap(HashMap<String, NDSM> dsmMap) {
+        this.dsmMap = dsmMap;
     }
 }

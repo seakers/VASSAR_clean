@@ -12,7 +12,8 @@
     <orderEntry type="library" exported="" name="Simple Logging Facade for Java:1.7.25" level="project" />
     <orderEntry type="library" exported="" name="net.sourceforge.jexcelapi:jxl:2.6.12" level="project" />
     <orderEntry type="library" exported="" name="org.apache.commons:commons-lang3:3.6" level="project" />
+    <orderEntry type="library" exported="" name="combinatoricslib-2.0" level="project" />
+    <orderEntry type="library" exported="" name="org.junit.jupiter:junit-jupiter-api:5.0.2" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org.junit.jupiter:junit-jupiter-api:5.0.2" level="project" />
   </component>
 </module>

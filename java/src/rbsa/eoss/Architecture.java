@@ -239,7 +239,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
 
     // Heuristics
     public Architecture mutate1bit() {
-        if (random.nextBoolean()) { //mutate matrix but not nsats
+        if (random.nextBoolean()) { // mutate matrix but not nsats
             Integer index = random.nextInt(numOrbits*numInstr - 1);
             boolean[] newBitString = new boolean[numOrbits*numInstr];
             System.arraycopy(bitVector,0, newBitString,0,numOrbits*numInstr);
@@ -314,14 +314,80 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
             }
             numTrials++;
         }
-        //If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        // If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
         if(payload0 == null || payload0.length == 0) {
             //System.out.println("improveOrbit > mutate1bit");
             return mutate1bit();
         }
 
-        //Otherwise, all instruments are in hthe best possible orbits, so return unchanged
+        // Otherwise, all instruments are in hthe best possible orbits, so return unchanged
         System.out.println("improveOrbit > No changes");
+        return new Architecture(bitMatrix, numSatellites);
+    }
+
+    public Architecture addSynergy() {
+        // Find a random non-empty orbit and its payload
+        String[] payload0 = null;
+        ArrayList<String> missing;
+        String orb;
+        ArrayList<String> theOrbits = new ArrayList<>();
+        Collections.addAll(theOrbits, params.orbitList);
+        Collections.shuffle(theOrbits); //this sorts orbits in random order
+        int numTrials = 0;
+        while (numTrials < params.numOrbits) {
+            orb = theOrbits.get(numTrials);
+            payload0 = getPayloadInOrbit(orb);
+            if (payload0 == null) { // is there any instrument in this orbit?
+                numTrials++;
+                continue;
+            }
+            else {
+                ArrayList<TreeMap<Nto1pair, Double>> tmList = new ArrayList<>();
+                // get dsm and positive binary synergies for that orbit
+                NDSM sdsm = params.allDsms.get("SDSM2@" + orb);
+                tmList.add(sdsm.getAllInteractions("+"));
+                // try with 3-lateral synergies
+                sdsm = params.allDsms.get("SDSM3@" + orb);
+                tmList.add(sdsm.getAllInteractions("+"));
+
+                for (TreeMap<Nto1pair, Double> tm: tmList) {
+                    // Find a missing synergy from interaction tree
+                    Iterator<Nto1pair> it = tm.keySet().iterator();
+                    for (int i = 0; i < tm.size(); i++) {
+                        // get next strongest interaction
+                        Nto1pair nt = it.next();
+
+                        // if architecture already contains that interaction, OR if does not contain N-1 elements from the interaction continue
+                        ArrayList<String> al = new ArrayList<>();
+                        Collections.addAll(al, nt.getBase());
+                        al.add(nt.getAdded());
+                        ArrayList<String> thePayload = new ArrayList<>();
+                        Collections.addAll(thePayload, payload0);
+                        if(capturesInteraction(thePayload, al) || !containsAllBut1FromInteraction(thePayload, al) ||
+                                random.nextFloat() > params.probAccept) {
+                            continue;
+                        }
+                        else {
+                            //otherwise find missing element and return;
+                            missing = new ArrayList<>(al);
+                            missing.removeAll(thePayload);
+                            //System.out.println("addSynergy");
+                            return new Architecture(addInstrumentToOrbit(bitMatrix, missing.get(0), orb), numSatellites);
+                        }
+                    }
+                }
+            }
+            numTrials++;
+        }
+
+        // If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        if (payload0 == null) {
+            System.out.println("addSynergy > mutate1bit");
+            return mutate1bit();
+        }
+
+        // if there are non-empty orbits, but all 2- and 3-synergies are captured, return best neighbor
+        //System.out.println("addSynergy > No changes");
         return new Architecture(bitMatrix, numSatellites);
     }
 
@@ -358,6 +424,23 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         thenew[params.orbitIndexes.get(from)][params.instrumentIndexes.get(instr)] = false;
         thenew[params.orbitIndexes.get(to)][params.instrumentIndexes.get(instr)] = true;
         return thenew;
+    }
+
+    private Boolean capturesInteraction(ArrayList<String> thePayload, ArrayList<String> al) {
+        // returns true if payl contains all elements in nt IN THE desired ORBIT
+        return (al.containsAll(thePayload));
+    }
+
+    private Boolean containsAllBut1FromInteraction(ArrayList<String> thePayload, ArrayList<String> al) {
+        // returns true if payl contains all but 1 elements in nt IN THE desired ORBIT
+        int count = 0;
+        for (int i = 0; i < al.size(); i++) {
+            if (thePayload.contains(al.get(i))) {
+                count++;
+            }
+        }
+        // return true if from the N elements in the interaction, we have exactly N-1 elements in the payload (i.e. 1 missing)
+        return count == al.size()-1;
     }
     
     // Utils

@@ -5,6 +5,7 @@ package rbsa.eoss.local;
  * @author dani
  */
 import jess.Defrule;
+import rbsa.eoss.NDSM;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
@@ -37,6 +38,7 @@ public class Params {
 
     public String revtimesDatFile;
     public String scoresDatFile;
+    public String dsmDatFile;
 
     public String moduleDefinitionClp;
     public String templateDefinitionClp;
@@ -125,6 +127,7 @@ public class Params {
     public HashMap<String, HashMap<String, Double>> revtimes;
     public HashMap<ArrayList<String>, HashMap<String, Double>> scores;
     public HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>> subobjScores;
+    public HashMap<String, NDSM> allDsms;
 
     public HashMap<String, String> subobjMeasurementParams;
 
@@ -144,6 +147,7 @@ public class Params {
 
         this.revtimesDatFile   = this.path + "/dat/climate-centric revtimes.dat";
         this.scoresDatFile = path + "/dat/scores2014-09-14-18-13-37.dat";
+        this.dsmDatFile = path + "/dat/all_dsms2014-09-14-18-56-03.dat";
 
         // Paths for common clp files
         this.moduleDefinitionClp            = this.path + "/clp/modules.clp";
@@ -227,6 +231,12 @@ public class Params {
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 this.scores = (HashMap<ArrayList<String>, HashMap<String, Double>>) ois.readObject();
                 this.subobjScores = (HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>>) ois.readObject();
+                ois.close();
+            }
+            if (!this.runMode.equalsIgnoreCase("update_dsms")) {
+                FileInputStream fis = new FileInputStream(dsmDatFile);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                this.allDsms = (HashMap<String, NDSM>) ois.readObject();
                 ois.close();
             }
         }
