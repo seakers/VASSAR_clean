@@ -257,6 +257,108 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
             return newOne;
         }
     }
+
+    public Architecture crossover1point(Architecture other) {
+        Integer index = random.nextInt(numOrbits*numInstr - 1);
+        boolean[] otherBs = other.getBitVector();
+        boolean[] newBitString = new boolean[numOrbits*numInstr];
+        System.arraycopy(bitVector, 0, newBitString,0, index);
+        System.arraycopy(otherBs, index+1, newBitString,index+1, numOrbits*numInstr - index - 1);//norb*ninstr
+        if (random.nextBoolean()) {
+            return new Architecture(newBitString, this.numOrbits, this.numInstr, numSatellites);
+        }
+        else {
+            return new Architecture(newBitString, this.numOrbits, this.numInstr, other.getNumSatellites());
+        }
+        //System.out.println("crossover1point");
+    }
+
+    public Architecture improveOrbit() {
+        // Find a random non-empty orbit and its payload
+        String[] payload0 = null;
+        int numTrials = 0;
+        String orb;
+        ArrayList<String> theOrbits = new ArrayList<>();
+        Collections.addAll(theOrbits, params.orbitList);
+        Collections.shuffle(theOrbits); // this sorts orbits in random order
+        while (numTrials < params.numOrbits) {
+            orb = theOrbits.get(numTrials);
+            payload0 = getPayloadInOrbit(orb);
+            if (payload0 == null) { // is there any instrument in this orbit?
+                numTrials++;
+                continue;
+            }
+            else {
+                ArrayList<String> thePayloads = new ArrayList<>();
+                Collections.addAll(thePayloads, payload0);
+                Collections.shuffle(thePayloads); // this sorts orbits in random order
+                for (String instr: thePayloads) {
+                    ArrayList<String> list = new ArrayList<>();
+                    list.add(instr);
+
+                    // get all orbit scores
+                    ArrayList<Map.Entry<String, Double>> list2 =
+                            new ArrayList<>(ArchitectureEvaluator.getInstance().getAllOrbitScores(list).entrySet());
+
+                    // sort orbits and get best_orbit
+                    list2.sort(Collections.reverseOrder(ByValueComparator));
+                    String bestOrbit = list2.get(0).getKey();
+                    Double newScore = list2.get(0).getValue();
+                    Double oldScore = ArchitectureEvaluator.getInstance().getScore(list, orb);
+
+                    if (newScore > oldScore && random.nextFloat() < params.probAccept) {
+                        //System.out.println("improveOrbit");
+                        return new Architecture(moveInstrument(bitMatrix, instr, orb, bestOrbit), numSatellites);
+                    }
+                }
+            }
+            numTrials++;
+        }
+        //If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        if(payload0 == null || payload0.length == 0) {
+            //System.out.println("improveOrbit > mutate1bit");
+            return mutate1bit();
+        }
+
+        //Otherwise, all instruments are in hthe best possible orbits, so return unchanged
+        System.out.println("improveOrbit > No changes");
+        return new Architecture(bitMatrix, numSatellites);
+    }
+
+    // Support functions for heuristics
+    public boolean[][] addInstrumentToOrbit(boolean[][] old, String toadd, String where) {
+        // create copy of current matrix
+        boolean[][] thenew = new boolean[numOrbits][numInstr];
+        for (int i = 0; i < old.length; i++) {
+            System.arraycopy(old[i], 0, thenew[i], 0, old[0].length);
+        }
+        // add the missing instrument in the right orbit and return
+        thenew[params.orbitIndexes.get(where)][params.instrumentIndexes.get(toadd)] = true;
+        return thenew;
+    }
+
+    public boolean[][] removeInstrumentFromOrbit(boolean[][] old, String instr, String from) {
+        // create copy of current matrix
+        boolean[][] thenew = new boolean[numOrbits][numInstr];
+        for (int i = 0; i < old.length; i++) {
+            System.arraycopy(old[i], 0, thenew[i], 0, old[0].length);
+        }
+        // add the missing instrument in the right orbit and return
+        thenew[params.orbitIndexes.get(from)][params.instrumentIndexes.get(instr)] = false;
+        return thenew;
+    }
+
+    public boolean[][] moveInstrument(boolean[][] old, String instr, String from, String to) {
+        //create copy of current matrix
+        boolean[][] thenew = new boolean[numOrbits][numInstr];
+        for (int i = 0; i < old.length; i++) {
+            System.arraycopy(old[i], 0, thenew[i], 0, old[0].length);
+        }
+        //add the missing instrument in the right orbit and return
+        thenew[params.orbitIndexes.get(from)][params.instrumentIndexes.get(instr)] = false;
+        thenew[params.orbitIndexes.get(to)][params.instrumentIndexes.get(instr)] = true;
+        return thenew;
+    }
     
     // Utils
     public boolean[][] booleanString2Matrix(String bitString) {
@@ -381,6 +483,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
             return 0;
         }
     }
+
     public static Comparator<Architecture> ArchCrowdDistComparator = (Architecture a1, Architecture a2) -> {
         double x = (a1.getResult().getCrowdingDistance() - a2.getResult().getCrowdingDistance());
         return compare2zero(x);
@@ -395,6 +498,8 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         double x = (a1.getResult().getCost() - a2.getResult().getCost());
         return compare2zero(x);
     };
+
+    public static Comparator<Map.Entry<String,Double>> ByValueComparator = Comparator.comparing(Map.Entry<String,Double>::getValue);
     
     public boolean isFeasibleAssignment() {
         return (sumAllInstruments(bitMatrix) <= params.MAX_TOTAL_INSTR);

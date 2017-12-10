@@ -36,6 +36,7 @@ public class Params {
     public String aggregationXls;
 
     public String revtimesDatFile;
+    public String scoresDatFile;
 
     public String moduleDefinitionClp;
     public String templateDefinitionClp;
@@ -72,9 +73,10 @@ public class Params {
     public double maxScience;
     public double minCost;
     public double maxCost;
+    public  double probAccept = 0.8;
 
     // Instruments
-    public String[] instrumentList = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR","DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};
+    public String[] instrumentList = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR"};//,"DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};
     public int numInstr;
     public String[] orbitList = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-DD","SSO-800-SSO-PM"};
     public int numOrbits;
@@ -121,6 +123,8 @@ public class Params {
     public HashMap<String, Double> subobjWeightsMap;
 
     public HashMap<String, HashMap<String, Double>> revtimes;
+    public HashMap<ArrayList<String>, HashMap<String, Double>> scores;
+    public HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>> subobjScores;
 
     public HashMap<String, String> subobjMeasurementParams;
 
@@ -139,6 +143,7 @@ public class Params {
         this.aggregationXls             = this.path + "/xls/Climate-centric/Climate-centric Aggregation Rules.xls";
 
         this.revtimesDatFile   = this.path + "/dat/climate-centric revtimes.dat";
+        this.scoresDatFile = path + "/dat/scores2014-09-14-18-13-37.dat";
 
         // Paths for common clp files
         this.moduleDefinitionClp            = this.path + "/clp/modules.clp";
@@ -217,9 +222,18 @@ public class Params {
                 this.revtimes = (HashMap<String, HashMap<String, Double>>) ois.readObject();
                 ois.close();
             }
-        } catch (Exception e) {
+            if (!this.runMode.equalsIgnoreCase("update_scores")) {
+                FileInputStream fis = new FileInputStream(scoresDatFile);
+                ObjectInputStream ois = new ObjectInputStream(fis);
+                this.scores = (HashMap<ArrayList<String>, HashMap<String, Double>>) ois.readObject();
+                this.subobjScores = (HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>>) ois.readObject();
+                ois.close();
+            }
+        }
+        catch (Exception e) {
             System.out.println(e.getMessage());
         }
+
     }
 
     public String getName() {
