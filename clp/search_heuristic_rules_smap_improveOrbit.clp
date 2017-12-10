@@ -1,6 +1,6 @@
 (defrule SEARCH-HEURISTICS::improve-orbit
     "This heuristic moves a random instrument to a better orbit" 
-    ?arch0 <- (MANIFEST::ARCHITECTURE (bitVector ?orig) (num-sats-per-plane ?ns) (improve improveOrbit) (factHistory ?fh))
+    ?arch0 <- (MANIFEST::ARCHITECTURE (bitString ?orig) (num-sats-per-plane ?ns) (improve improveOrbit) (factHistory ?fh))
     =>
 	;(printout t improve-orbit crlf)
     (bind ?N 1)

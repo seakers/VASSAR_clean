@@ -21,6 +21,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     private String payload;
     private String orbit;
     private Result result;
+    private Random random;
     private String mutate;
     private String crossover;
     private String improve;
@@ -41,6 +42,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         bitMatrix = bitString2Mat(bitVector, numOrbits, numInstr);
         orbit = null;
         result = new Result(this,-1,-1,-1);
+        random = new Random();
         updateOrbitPayload();
         mutate = "no";
         crossover = "no";
@@ -60,6 +62,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         this.numSatellites = numSatellites;
         orbit = null;
         result = new Result(this,-1,-1,-1);
+        random = new Random();
         updateOrbitPayload();
         mutate = "no";
         crossover = "no";
@@ -79,6 +82,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         evalMode = "RUN";
         orbit = null;
         result = new Result(this,-1,-1,-1);
+        random = new Random();
         updateOrbitPayload();
         mutate = "no";
         crossover = "no";
@@ -117,6 +121,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         this.numSatellites = numSatellites;
         orbit = null;
         result = new Result(this,-1,-1,-1);
+        random = new Random();
         updateOrbitPayload();
         mutate = "no";
         crossover = "no";
@@ -230,6 +235,27 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         }
         str += "\"";
         return str;
+    }
+
+    // Heuristics
+    public Architecture mutate1bit() {
+        if (random.nextBoolean()) { //mutate matrix but not nsats
+            Integer index = random.nextInt(numOrbits*numInstr - 1);
+            boolean[] newBitString = new boolean[numOrbits*numInstr];
+            System.arraycopy(bitVector,0, newBitString,0,numOrbits*numInstr);
+            newBitString[index] = !bitVector[index];
+            Architecture newOne = new Architecture(newBitString, this.numOrbits, this.numInstr, this.numSatellites);
+            newOne.setCrossover(crossover);
+            newOne.setImprove(improve);
+            return newOne;
+        }
+        else { // mutate nsats but not matrix
+            Architecture newOne = new Architecture(bitVector, this.numOrbits, this.numInstr,
+                    params.numSatellites[random.nextInt(params.numSatellites.length)]);
+            newOne.setCrossover(crossover);
+            newOne.setImprove(improve);
+            return newOne;
+        }
     }
     
     // Utils

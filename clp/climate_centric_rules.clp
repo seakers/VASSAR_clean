@@ -4,7 +4,7 @@
 ;(set-reset-globals FALSE)
 ;(ENUMERATION::SMAP-ARCHITECTURE (payload SMAP_RAD SMAP_MWR CMIS VIIRS BIOMASS) (num-sats 1) (orbit-altitude 800) (orbit-raan DD) (orbit-type SSO) (orbit-inc SSO) (num-planes 1) (doesnt-fly ) (num-sats-per-plane 1) (num-instruments 5) (sat-assignments 1 1 1 1 1))
 
-(deftemplate MANIFEST::ARCHITECTURE (slot bitVector) (multislot payload) (slot num-sats) (slot source) (slot orbit)
+(deftemplate MANIFEST::ARCHITECTURE (slot bitString) (multislot payload) (slot num-sats) (slot source) (slot orbit)
     (slot orbit-altitude) (slot orbit-raan) (slot orbit-type) (slot orbit-inc) (slot num-planes)
     (multislot doesnt-fly) (slot num-sats-per-plane) (slot lifecycle-cost) (slot benefit)  
 	(slot space-segment-cost) (slot ground-segment-cost) (slot pareto-ranking) (slot utility)

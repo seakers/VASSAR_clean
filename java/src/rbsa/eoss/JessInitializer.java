@@ -1334,7 +1334,8 @@ public class JessInitializer {
             r.run();
         }
         catch (Exception e) {
-            System.out.println("EXC in loadSearchRules " + e.getMessage());
+            System.err.println("EXC in loadSearchRules " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
