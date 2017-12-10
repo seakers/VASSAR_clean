@@ -27,6 +27,7 @@ public class Params {
     public String reqMode;
     public String name;
     public String runMode;
+    public String initialPop;
 
     public String templateDefinitionXls;
     public String missionAnalysisDatabaseXls;
@@ -66,6 +67,12 @@ public class Params {
     public String critiquePerformanceInitializeFactsClp;
     public String critiqueCostInitializeFactsClp;
 
+    // Metrics for utility and pareto calculations
+    public double minScience;
+    public double maxScience;
+    public double minCost;
+    public double maxCost;
+
     // Instruments
     public String[] instrumentList = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR","DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};
     public int numInstr;
@@ -73,7 +80,11 @@ public class Params {
     public int numOrbits;
     public HashMap<String, Integer> instrumentIndexes = new HashMap<>();
     public HashMap<String, Integer> orbitIndexes = new HashMap<>();
+    public int[] numSatellites = {1};
     public int MAX_TOTAL_INSTR;
+
+    // Results
+    public String pathSaveResults;
 
     // Intermediate results
     public int nof; //number of facts
@@ -118,6 +129,7 @@ public class Params {
         this.reqMode = mode;
         this.name = name;
         this.runMode = runMode;
+        this.initialPop = "";
 
         // Paths for common xls files
         this.templateDefinitionXls      = this.path + "/xls/Climate-centric/Climate-centric AttributeSet.xls";

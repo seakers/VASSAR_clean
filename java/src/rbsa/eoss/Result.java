@@ -11,10 +11,14 @@ package rbsa.eoss;
 import java.util.ArrayList;
 import jess.*;
 import rbsa.eoss.local.Params;
+
 import java.util.TreeMap;
 public class Result implements java.io.Serializable {
+    private Params params;
     private double science;
     private double cost;
+    private double normScience;
+    private double normCost;
     private ArrayList<ArrayList<ArrayList<Double>>> subobjectiveScores;
     private ArrayList<ArrayList<Double>> objectiveScores;
     private ArrayList<Double> panelScores;
@@ -26,16 +30,20 @@ public class Result implements java.io.Serializable {
     private ArrayList<Fact> capabilities;
     private ArrayList<Fact> costFacts;
     private int paretoRanking;
+    private double crowdingDistance;
     private double utility;
     private String taskType;
 
     //Constructors
-    public Result() { }
+    public Result() {
+        params = Params.getInstance();
+    }
 
     public Result(Architecture arch, double science, double cost, FuzzyValue fs, FuzzyValue fc,
                   ArrayList<ArrayList<ArrayList<Double>>> subobjectiveScores,
                   ArrayList<ArrayList<Double>> objectiveScores, ArrayList<Double> panelScores,
                   TreeMap<String, Double> subobjectiveScoresMap) {
+        params = Params.getInstance();
         this.science = science;
         this.cost = cost;
         this.subobjectiveScores = subobjectiveScores;
@@ -47,13 +55,17 @@ public class Result implements java.io.Serializable {
         capabilities = null;
         costFacts = null;
         paretoRanking = -1;
+        crowdingDistance = 0.0;
         utility = -1.0;
+        this.normScience = (science - params.minScience)/(params.maxScience - params.minScience);
+        this.normCost = (cost - params.minCost)/(params.maxCost - params.minCost);
         taskType = "Fast";
         this.fuzzyScience = fs;
         this.fuzzyCost = fc;
     }
 
     public Result(Architecture arch, double science, double cost, int pr) {
+        params = Params.getInstance();
         this.science = science;
         this.cost = cost;
         this.subobjectiveScores = null;
@@ -65,7 +77,32 @@ public class Result implements java.io.Serializable {
         capabilities = null;
         costFacts = null;
         paretoRanking = pr;
+        crowdingDistance = 0.0;
         utility = -1.0;
+        this.normScience = (science - params.minScience)/(params.maxScience-params.minScience);
+        this.normCost = (cost - params.minCost)/(params.maxCost - params.minCost);
+        taskType = "Fast";
+        this.fuzzyScience = null;
+        this.fuzzyCost = null;
+    }
+
+    public Result(Architecture arch, double science, double cost) {
+        params = Params.getInstance();
+        this.science = science;
+        this.cost = cost;
+        this.subobjectiveScores = null;
+        this.subobjectiveScoresMap = null;
+        this.objectiveScores = null;
+        this.panelScores = null;
+        this.arch = arch;
+        explanations = null;
+        capabilities = null;
+        costFacts = null;
+        paretoRanking = -1;
+        crowdingDistance = 0.0;
+        utility = -1.0;
+        this.normScience = (science - params.minScience)/(params.maxScience-params.minScience);
+        this.normCost = (cost - params.minCost)/(params.maxCost - params.minCost);
         taskType = "Fast";
         this.fuzzyScience = null;
         this.fuzzyCost = null;
@@ -78,48 +115,70 @@ public class Result implements java.io.Serializable {
     public void setCapabilities(ArrayList<Fact> capabilities) {
         this.capabilities = capabilities;
     }
+
     public TreeMap<String,ArrayList<Fact>> getExplanations() {
         return explanations;
     }
     public void setExplanations(TreeMap<String,ArrayList<Fact>> explanations) {
         this.explanations = explanations;
     }
+
     public String getTaskType() {
         return taskType;
     }
     public void setTaskType(String taskType) {
         this.taskType = taskType;
     }
+
     public Architecture getArch() {
         return arch;
     }
     public void setArch(Architecture arch) {
         this.arch = arch;
     }
+
     public double getScience() {
         return science;
     }
     public void setScience(double science) {
         this.science = science;
     }
+
     public double getCost() {
         return cost;
     }
     public void setCost(double cost) {
         this.cost = cost;
     }
+
+    public double getNormScience() {
+        return normScience;
+    }
+    public double getNormCost() {
+        return normCost;
+    }
+
+    public int getParetoRanking() {
+        return paretoRanking;
+    }
     public void setParetoRanking(int paretoRanking) {
         this.paretoRanking = paretoRanking;
+    }
+
+    public double getCrowdingDistance() {
+        return crowdingDistance;
+    }
+    public void setCrowdingDistance(double crowdingDistance) {
+        this.crowdingDistance = crowdingDistance;
+    }
+
+    public double getUtility() {
+        return utility;
     }
     public void setUtility(double utility) {
         this.utility = utility;
     }
-    public int getParetoRanking() {
-        return paretoRanking;
-    }
-    public double getUtility() {
-        return utility;
-    }
+
     public ArrayList<ArrayList<ArrayList<Double>>> getSubobjectiveScores() {
         return subobjectiveScores;
     }
@@ -200,6 +259,10 @@ public class Result implements java.io.Serializable {
 
     public static double sumProduct(ArrayList<Double> a, ArrayList<Double> b) throws Exception {
         return SumDollar(dotMult(a, b));
+    }
+
+    public double distance(Result other) {
+        return Math.sqrt(Math.pow(normScience-other.getNormScience(),2) + Math.pow(normCost-other.getNormCost(),2));
     }
 
     @Override

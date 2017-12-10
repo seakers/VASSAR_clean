@@ -1,7 +1,9 @@
 package rbsa.eoss;
 
 import rbsa.eoss.local.Params;
-import java.util.UUID;
+
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -48,6 +50,25 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         id = UUID.randomUUID().toString();
     }
 
+    public Architecture(boolean[][] bitMatrix, int numSatellites) {
+        params = Params.getInstance();
+        this.bitMatrix = bitMatrix;
+        numOrbits = bitMatrix.length;
+        numInstr = bitMatrix[0].length;
+        bitVector = mat2BitString(bitMatrix);
+        evalMode = "RUN";
+        this.numSatellites = numSatellites;
+        orbit = null;
+        result = new Result(this,-1,-1,-1);
+        updateOrbitPayload();
+        mutate = "no";
+        crossover = "no";
+        improve = "no";
+        heuristicsToApply = "";
+        heuristicsApplied = "";
+        id = UUID.randomUUID().toString();
+    }
+
     public Architecture(String bitString, int numSatellites) {
         params = Params.getInstance();
         bitMatrix = booleanString2Matrix(bitString);
@@ -56,6 +77,44 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
         this.numSatellites = numSatellites;
         bitVector = mat2BitString(bitMatrix);
         evalMode = "RUN";
+        orbit = null;
+        result = new Result(this,-1,-1,-1);
+        updateOrbitPayload();
+        mutate = "no";
+        crossover = "no";
+        improve = "no";
+        heuristicsToApply = "";
+        heuristicsApplied = "";
+        id = UUID.randomUUID().toString();
+    }
+
+    public Architecture(HashMap<String, String[]> mapping, int numSatellites) {
+        params = Params.getInstance();
+        bitMatrix = new boolean[params.numOrbits][params.numInstr];
+        for (int o = 0; o < params.numOrbits; o++) {
+            for(int i = 0; i < params.numInstr; i++) {
+                bitMatrix[o][i] = false;
+            }
+        }
+
+        for (int o = 0; o < params.numOrbits; o++) {
+            String orb = params.orbitList[o];
+            String[] payl = mapping.get(orb);
+            if (payl == null)
+                continue;
+            ArrayList<String> thepayl = new ArrayList<>(Arrays.asList(payl));
+            for(int i = 0; i < params.numInstr; i++) {
+                String instr = params.instrumentList[i];
+                if(thepayl.contains(instr))
+                    bitMatrix[o][i] = true;
+            }
+        }
+
+        numOrbits = bitMatrix.length;
+        numInstr = bitMatrix[0].length;
+        bitVector = mat2BitString(bitMatrix);
+        evalMode = "RUN";
+        this.numSatellites = numSatellites;
         orbit = null;
         result = new Result(this,-1,-1,-1);
         updateOrbitPayload();
@@ -104,6 +163,9 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     public int getTotalInstruments() {
         return sumAllInstruments(bitMatrix);
     }
+    public String getHeuristicsToApply() {
+        return heuristicsToApply;
+    }
     
     //Setters
     public void setUtility(double utility) {
@@ -127,6 +189,9 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     public void setEvalMode(String evalMode) {
         this.evalMode = evalMode;
     }
+    public void setHeuristicsToApply(String heuristicsToApply) {
+        this.heuristicsToApply = heuristicsToApply;
+    }
 
     //toString
     @Override
@@ -143,10 +208,10 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public String toFactString() {
-        String ret =  "(MANIFEST::ARCHITECTURE" + " (id " + id + ") (num-sats-per-plane " + numSatellites + ") (bitVector " + toBitString() + ") (payload " + payload + ") (orbit " + orbit + ")"
+        String ret = "(MANIFEST::ARCHITECTURE" + " (id " + id + ") (num-sats-per-plane " + numSatellites + ") (bitString " + toBitString() + ") (payload " + payload + ") (orbit " + orbit + ")"
                 + " (mutate " + mutate + " ) (crossover " + crossover + ") (improve " + improve + ") (heuristics-to-apply " + heuristicsToApply + " ) (heuristics-applied " + heuristicsApplied + ") "
                 + "(factHistory F" + params.nof + ")";
-                params.nof++;
+        params.nof++;
         if (result != null) {
             ret += " (benefit " + result.getScience() + " ) (lifecycle-cost " + result.getCost() + ")" + " (pareto-ranking " + result.getParetoRanking() + " ) (utility " + result.getUtility() + ")";
         }
@@ -278,6 +343,32 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
             return 1;
         }
     }
+
+    private static int compare2zero(double x) {
+        if(x < 0) {
+            return 1;
+        }
+        else if (x > 0) {
+            return -1;
+        }
+        else {
+            return 0;
+        }
+    }
+    public static Comparator<Architecture> ArchCrowdDistComparator = (Architecture a1, Architecture a2) -> {
+        double x = (a1.getResult().getCrowdingDistance() - a2.getResult().getCrowdingDistance());
+        return compare2zero(x);
+    };
+
+    public static Comparator<Architecture> ArchScienceComparator = (Architecture a1, Architecture a2) -> {
+        double x = (a1.getResult().getScience() - a2.getResult().getScience());
+        return compare2zero(x);
+    };
+
+    public static Comparator<Architecture> ArchCostComparator = (Architecture a1, Architecture a2) -> {
+        double x = (a1.getResult().getCost() - a2.getResult().getCost());
+        return compare2zero(x);
+    };
     
     public boolean isFeasibleAssignment() {
         return (sumAllInstruments(bitMatrix) <= params.MAX_TOTAL_INSTR);
