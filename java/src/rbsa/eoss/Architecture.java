@@ -372,6 +372,9 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
                             missing = new ArrayList<>(al);
                             missing.removeAll(thePayload);
                             //System.out.println("addSynergy");
+                            if (!Arrays.asList(params.instrumentList).contains(missing.get(0))) {
+                                continue;
+                            }
                             return new Architecture(addInstrumentToOrbit(bitMatrix, missing.get(0), orb), numSatellites);
                         }
                     }
@@ -388,6 +391,136 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
 
         // if there are non-empty orbits, but all 2- and 3-synergies are captured, return best neighbor
         //System.out.println("addSynergy > No changes");
+        return new Architecture(bitMatrix, numSatellites);
+    }
+
+    public Architecture addRandomToSmallSat() {
+        // Find a random non-empty orbit and its payload
+        String[] payload0 = null;
+        int MAXSIZE = 3;
+        int numTrials = 0;
+        String orb = "";
+        ArrayList<String> theOrbits = new ArrayList<>();
+        Collections.addAll(theOrbits, params.orbitList);
+        Collections.shuffle(theOrbits);//this sorts orbits in random order
+        while (numTrials < params.numOrbits)  {
+            orb = theOrbits.get(numTrials);
+            payload0 = getPayloadInOrbit(orb);
+            if (payload0 == null || payload0.length > MAXSIZE) { // is there at most MAXSIZE instruments in this orbit?
+                numTrials++;
+            }
+            else {
+                break;
+            }
+        }
+        // If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        if (payload0 == null || numTrials == params.numOrbits) {
+            System.out.println("addRandomToSmallSat > mutate1bit");
+            return mutate1bit();
+        }
+
+        // Return new architecture with one instrument (random) added to orb
+        ArrayList<String> candidates = new ArrayList<>();
+        Collections.addAll(candidates, params.instrumentList);
+        ArrayList<String> flown = new ArrayList<>();
+        Collections.addAll(flown, payload0);
+
+        candidates.removeAll(flown);
+        Collections.shuffle(candidates); //this sorts candidates in random order
+        String instr = candidates.get(0); //so we can pick the first one
+        boolean[][] new_mat = addInstrumentToOrbit(bitMatrix, instr, orb);
+        //System.out.println("addRandomToSmallSat");
+        return new Architecture(new_mat, numSatellites);
+    }
+
+    public Architecture removeRandomFromLoadedSat() {
+        // Find a random non-empty orbit and its payload
+        String[] payload0 = null;
+        int MINSIZE = 3;
+        int numTrials = 0;
+        String orb = "";
+        ArrayList<String> theOrbits = new ArrayList<>();
+        Collections.addAll(theOrbits, params.orbitList);
+        Collections.shuffle(theOrbits); //this sorts orbits in random order
+        while (numTrials < params.numOrbits) {
+            orb = theOrbits.get(numTrials);
+            payload0 = getPayloadInOrbit(orb);
+            if (payload0 == null || payload0.length < MINSIZE) { // is there at least MINSIZE instruments in this orbit?
+                numTrials++;
+            }
+            else {
+                break;
+            }
+        }
+        // If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        if (payload0 == null || numTrials == params.numOrbits) {
+            //System.out.println("removeRandomFromLoadedSat > mutate1bit");
+            return mutate1bit();
+        }
+        // Return new architecture with one instrument (random) removed from orb
+        ArrayList<String> candidates = new ArrayList<>();
+        Collections.addAll(candidates, payload0);
+        Collections.shuffle(candidates);//this sorts candidates in random order
+        String instr = candidates.get(0);
+        boolean[][] new_mat = removeInstrumentFromOrbit(bitMatrix, instr, orb);
+        //System.out.println("removeRandomFromLoadedSat");
+        return new Architecture(new_mat, numSatellites);
+    }
+
+    public Architecture removeSuperfluous() {
+        String[] payload0 = null;
+        String orb;
+        ArrayList<String> theOrbits = new ArrayList<>();
+        Collections.addAll(theOrbits, params.orbitList);
+        Collections.shuffle(theOrbits);//this sorts orbits in random order
+        int numTrials = 0;
+        while (numTrials < params.numOrbits)  {
+            orb = theOrbits.get(numTrials);
+            payload0 = getPayloadInOrbit(orb);
+            if (payload0 == null) { // is there any instrument in this orbit?
+                numTrials++;
+                continue;
+            }
+            else {
+                ArrayList<TreeMap<Nto1pair, Double>> tmList = new ArrayList<>();
+                // get redundancy dsm and zero binary inteferences for that orbit
+                // TODO: Remove 12 somehow
+                NDSM rdsm = params.allDsms.get("RDSM" + (12) + "@" + orb);
+                tmList.add(rdsm.getAllInteractions("-"));
+                //try with 3-lateral interferences
+                rdsm = params.allDsms.get("RDSM3@" + orb);
+                tmList.add(rdsm.getAllInteractions("-"));
+
+                for (TreeMap<Nto1pair, Double> tm: tmList) {
+                    // Find a missing synergy from interaction tree
+                    Iterator<Nto1pair> it = tm.keySet().iterator();
+                    for (int i = 0; i < tm.size(); i++) {
+                        Nto1pair nt = it.next();
+                        ArrayList<String> al = new ArrayList<>();
+                        Collections.addAll(al, nt.getBase());
+                        al.add(nt.getAdded());
+                        ArrayList<String> thePayload = new ArrayList<>();
+                        Collections.addAll(thePayload, payload0);
+                        if ((!nt.getAdded().equalsIgnoreCase("SMAP_ANT")) && capturesInteraction(thePayload, al)
+                                && random.nextFloat() < params.probAccept) {
+                            //System.out.println("removeSuperfluous");
+                            if (!Arrays.asList(params.instrumentList).contains(nt.getAdded())) {
+                                continue;
+                            }
+                            return new Architecture(removeInstrumentFromOrbit(bitMatrix, nt.getAdded(), orb), numSatellites);
+                        }
+                    }
+                }
+            }
+            numTrials++;
+        }
+        //If all orbits are empty mutate 1 bit = add 1 instrument to 1 orbit
+        if (payload0 == null) {
+            //System.out.println("removeSuperfluous > mutate");
+            return mutate1bit();
+        }
+        // if there are non-empty orbits, but all 2- and 3-inteferences are already solved, return with no changes
+        System.out.println("removeSuperfluous > No changes");
         return new Architecture(bitMatrix, numSatellites);
     }
 
