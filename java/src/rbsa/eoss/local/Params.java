@@ -137,6 +137,7 @@ public class Params {
         this.name = name;
         this.runMode = runMode;
         this.initialPop = "";
+        this.pathSaveResults = this.path + "/results";
 
         // Paths for common xls files
         this.templateDefinitionXls      = this.path + "/xls/Climate-centric/Climate-centric AttributeSet.xls";
@@ -145,9 +146,9 @@ public class Params {
         this.requirementSatisfactionXls = this.path + "/xls/Climate-centric/Climate-centric Requirement Rules.xls";
         this.aggregationXls             = this.path + "/xls/Climate-centric/Climate-centric Aggregation Rules.xls";
 
-        this.revtimesDatFile   = this.path + "/dat/climate-centric revtimes.dat";
-        this.scoresDatFile = path + "/dat/scores2014-09-14-18-13-37.dat";
-        this.dsmDatFile = path + "/dat/all_dsms2014-09-14-18-56-03.dat";
+        this.revtimesDatFile            = this.path + "/dat/climate-centric revtimes.dat";
+        this.scoresDatFile              = this.path + "/dat/scores2014-09-14-18-13-37.dat";
+        this.dsmDatFile                 = this.path + "/dat/all_dsms2014-09-14-18-56-03.dat";
 
         // Paths for common clp files
         this.moduleDefinitionClp            = this.path + "/clp/modules.clp";
@@ -241,7 +242,8 @@ public class Params {
             }
         }
         catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
 
     }

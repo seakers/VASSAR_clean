@@ -14,8 +14,6 @@ import java.util.HashMap;
 import java.util.Stack;
 
 public class ResultCollection implements java.io.Serializable {
-
-    private Params params;
     private String stamp;
     private String filePath;
     private String name;
@@ -24,15 +22,15 @@ public class ResultCollection implements java.io.Serializable {
     private ArrayList<Result> front;
 
     public ResultCollection(Stack<Result> results) {
-        params = Params.getInstance();
+        Params params = Params.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd_HH-mm-ss" );
         stamp = dateFormat.format( new Date() );
         name = params.getName();
         conf = new HashMap<>();
-        conf.put("Requirements",params.requirementSatisfactionXls);
-        conf.put("Capabilities",params.capabilityRulesXls);
+        conf.put("Requirements", params.requirementSatisfactionXls);
+        conf.put("Capabilities", params.capabilityRulesXls);
         
-        filePath = params.pathSaveResults + "\\" + stamp + "_" + name + ".rs";
+        filePath = params.pathSaveResults + "/" + stamp + "_" + name + ".rs";
         filePath = filePath.replaceAll("\\\\", "\\\\\\\\");
         this.results = results;
         front = computeParetoFront(results);
@@ -74,9 +72,13 @@ public class ResultCollection implements java.io.Serializable {
 
     public ArrayList<Architecture> getPopulation() {
         ArrayList<Architecture> pop = new ArrayList<>();
-        for (Result res:front)
+        for (Result res: front)
             pop.add(res.getArch());
         return pop;
+    }
+
+    public ArrayList<Result> getFront() {
+        return front;
     }
 }
 

@@ -30,10 +30,10 @@ public class RBSAEOSSSMAP {
         ArrayList<Architecture> initialPopulation = ArchitectureGenerator.getInstance().getInitialPopulation(POP_SIZE);
         for (int i = 0; i < 20; i++) {
             if (i > 0) {
-                Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal","search_heuristic_rules_smap_127");//FUZZY or CRISP
                 if (initialPopulation != null) {
                     initialPopulation = c.getPopulation();
                 }
+                Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal","search_heuristic_rules_smap_127");//FUZZY or CRISP
                 AE.clear();
             }
             AE.init(8);

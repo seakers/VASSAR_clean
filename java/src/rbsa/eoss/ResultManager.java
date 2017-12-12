@@ -32,12 +32,13 @@ public class ResultManager {
         try {
             FileOutputStream file = new FileOutputStream(c.getFilePath());
             ObjectOutputStream os = new ObjectOutputStream(file);
-            os.writeObject( c );
+            os.writeObject(c);
             os.close();
             file.close();
         }
         catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
     

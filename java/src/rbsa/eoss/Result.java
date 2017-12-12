@@ -14,7 +14,6 @@ import rbsa.eoss.local.Params;
 
 import java.util.TreeMap;
 public class Result implements java.io.Serializable {
-    private Params params;
     private double science;
     private double cost;
     private double normScience;
@@ -35,15 +34,13 @@ public class Result implements java.io.Serializable {
     private String taskType;
 
     //Constructors
-    public Result() {
-        params = Params.getInstance();
-    }
+    public Result() { }
 
     public Result(Architecture arch, double science, double cost, FuzzyValue fs, FuzzyValue fc,
                   ArrayList<ArrayList<ArrayList<Double>>> subobjectiveScores,
                   ArrayList<ArrayList<Double>> objectiveScores, ArrayList<Double> panelScores,
                   TreeMap<String, Double> subobjectiveScoresMap) {
-        params = Params.getInstance();
+        Params params = Params.getInstance();
         this.science = science;
         this.cost = cost;
         this.subobjectiveScores = subobjectiveScores;
@@ -65,7 +62,7 @@ public class Result implements java.io.Serializable {
     }
 
     public Result(Architecture arch, double science, double cost, int pr) {
-        params = Params.getInstance();
+        Params params = Params.getInstance();
         this.science = science;
         this.cost = cost;
         this.subobjectiveScores = null;
@@ -87,7 +84,7 @@ public class Result implements java.io.Serializable {
     }
 
     public Result(Architecture arch, double science, double cost) {
-        params = Params.getInstance();
+        Params params = Params.getInstance();
         this.science = science;
         this.cost = cost;
         this.subobjectiveScores = null;

@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 
 public class Architecture implements Comparable<Architecture>, java.io.Serializable {
-    private Params params;
     private boolean[] bitVector;
     private int numOrbits;
     private int numInstr;
@@ -33,7 +32,6 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     
     //Constructors
     public Architecture(boolean[] bitVector, int numOrbits, int numInstruments, int numSatellites) {
-        params = Params.getInstance();
         this.bitVector = bitVector;
         this.numOrbits = numOrbits;
         this.numInstr = numInstruments;
@@ -53,7 +51,6 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture(boolean[][] bitMatrix, int numSatellites) {
-        params = Params.getInstance();
         this.bitMatrix = bitMatrix;
         numOrbits = bitMatrix.length;
         numInstr = bitMatrix[0].length;
@@ -73,7 +70,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture(String bitString, int numSatellites) {
-        params = Params.getInstance();
+        Params params = Params.getInstance();
         bitMatrix = booleanString2Matrix(bitString);
         numOrbits = params.numOrbits;
         numInstr = params.numInstr;
@@ -93,6 +90,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture(HashMap<String, String[]> mapping, int numSatellites) {
+        Params params = Params.getInstance();
         params = Params.getInstance();
         bitMatrix = new boolean[params.numOrbits][params.numInstr];
         for (int o = 0; o < params.numOrbits; o++) {
@@ -201,6 +199,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     //toString
     @Override
     public String toString() {
+        Params params = Params.getInstance();
         String ret = "Arch = " + numSatellites + " x ";
         for (int o = 0; o < numOrbits; o++) {
             String orb = params.orbitList[o];
@@ -213,6 +212,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public String toFactString() {
+        Params params = Params.getInstance();
         String ret = "(MANIFEST::ARCHITECTURE" + " (id " + id + ") (num-sats-per-plane " + numSatellites + ") (bitString " + toBitString() + ") (payload " + payload + ") (orbit " + orbit + ")"
                 + " (mutate " + mutate + " ) (crossover " + crossover + ") (improve " + improve + ") (heuristics-to-apply " + heuristicsToApply + " ) (heuristics-applied " + heuristicsApplied + ") "
                 + "(factHistory F" + params.nof + ")";
@@ -239,6 +239,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
 
     // Heuristics
     public Architecture mutate1bit() {
+        Params params = Params.getInstance();
         if (random.nextBoolean()) { // mutate matrix but not nsats
             Integer index = random.nextInt(numOrbits*numInstr - 1);
             boolean[] newBitString = new boolean[numOrbits*numInstr];
@@ -274,6 +275,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture improveOrbit() {
+        Params params = Params.getInstance();
         // Find a random non-empty orbit and its payload
         String[] payload0 = null;
         int numTrials = 0;
@@ -326,6 +328,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture addSynergy() {
+        Params params = Params.getInstance();
         // Find a random non-empty orbit and its payload
         String[] payload0 = null;
         ArrayList<String> missing;
@@ -395,6 +398,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture addRandomToSmallSat() {
+        Params params = Params.getInstance();
         // Find a random non-empty orbit and its payload
         String[] payload0 = null;
         int MAXSIZE = 3;
@@ -434,6 +438,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture removeRandomFromLoadedSat() {
+        Params params = Params.getInstance();
         // Find a random non-empty orbit and its payload
         String[] payload0 = null;
         int MINSIZE = 3;
@@ -468,6 +473,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public Architecture removeSuperfluous() {
+        Params params = Params.getInstance();
         String[] payload0 = null;
         String orb;
         ArrayList<String> theOrbits = new ArrayList<>();
@@ -526,6 +532,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
 
     // Support functions for heuristics
     public boolean[][] addInstrumentToOrbit(boolean[][] old, String toadd, String where) {
+        Params params = Params.getInstance();
         // create copy of current matrix
         boolean[][] thenew = new boolean[numOrbits][numInstr];
         for (int i = 0; i < old.length; i++) {
@@ -537,6 +544,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public boolean[][] removeInstrumentFromOrbit(boolean[][] old, String instr, String from) {
+        Params params = Params.getInstance();
         // create copy of current matrix
         boolean[][] thenew = new boolean[numOrbits][numInstr];
         for (int i = 0; i < old.length; i++) {
@@ -548,6 +556,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public boolean[][] moveInstrument(boolean[][] old, String instr, String from, String to) {
+        Params params = Params.getInstance();
         //create copy of current matrix
         boolean[][] thenew = new boolean[numOrbits][numInstr];
         for (int i = 0; i < old.length; i++) {
@@ -578,6 +587,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     
     // Utils
     public boolean[][] booleanString2Matrix(String bitString) {
+        Params params = Params.getInstance();
         boolean[][] mat = new boolean[params.numOrbits][params.numInstr];
         for (int i = 0; i < params.numOrbits; i++) {
             for (int j = 0; j < params.numInstr; j++) {
@@ -644,6 +654,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     public String[] getPayloadInOrbit(String orb) {
+        Params params = Params.getInstance();
         String[] thepayloads = null;
          for (int i = 0; i < params.numOrbits; i++) {
             if (orb.equalsIgnoreCase(params.orbitList[i])) {
@@ -661,6 +672,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     }
 
     private void updateOrbitPayload() {
+        Params params = Params.getInstance();
         for (int i = 0; i < params.numOrbits; i++) {
             int n = sumRowBool(bitMatrix, i);
             if (n > 0) {
@@ -718,6 +730,7 @@ public class Architecture implements Comparable<Architecture>, java.io.Serializa
     public static Comparator<Map.Entry<String,Double>> ByValueComparator = Comparator.comparing(Map.Entry<String,Double>::getValue);
     
     public boolean isFeasibleAssignment() {
+        Params params = Params.getInstance();
         return (sumAllInstruments(bitMatrix) <= params.MAX_TOTAL_INSTR);
     }
     
