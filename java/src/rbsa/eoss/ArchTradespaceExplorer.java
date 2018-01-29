@@ -99,22 +99,22 @@ public class ArchTradespaceExplorer {
             Resource res = ArchitectureEvaluator.getInstance().getSearchResource();
             Rete r = res.getRete();
             String str_list = "";
-            try {
-                r.setFocus("DATABASE");
-                r.run();
-                ArrayList<Fact> ff = res.getQueryBuilder().makeQuery("SEARCH-HEURISTICS::list-improve-heuristics");
-                Fact f = ff.get(0);
-                ValueVector vv = f.getSlotValue("list").listValue(r.getGlobalContext());
-                ArrayList<String> list = res.getM().jessList2ArrayList(vv, r);
-                for (String heur: list) {
-                    str_list += " " + heur; //Initial extra space is irrelevant
-                }
-            }
-            catch (Exception e) {
-                System.out.println("EXC in ArchTradespaceExplorer:extendPopulation: " + e.getClass() + " " + e.getMessage());
-                e.printStackTrace();
-                ArchitectureEvaluator.getInstance().freeSearchResource();
-            }
+//            try {
+//                r.setFocus("DATABASE");
+//                r.run();
+//                ArrayList<Fact> ff = res.getQueryBuilder().makeQuery("SEARCH-HEURISTICS::list-improve-heuristics");
+//                Fact f = ff.get(0);
+//                ValueVector vv = f.getSlotValue("list").listValue(r.getGlobalContext());
+//                ArrayList<String> list = res.getM().jessList2ArrayList(vv, r);
+//                for (String heur: list) {
+//                    str_list += " " + heur; //Initial extra space is irrelevant
+//                }
+//            }
+//            catch (Exception e) {
+//                System.out.println("EXC in ArchTradespaceExplorer:extendPopulation: " + e.getClass() + " " + e.getMessage());
+//                e.printStackTrace();
+//                ArchitectureEvaluator.getInstance().freeSearchResource();
+//            }
 
             String impr;
             for (long i = 0; i < currentPopulation.size(); i++) {
@@ -144,7 +144,7 @@ public class ArchTradespaceExplorer {
             }
             ArchitectureEvaluator.getInstance().freeSearchResource();
         } else {
-            currentPopulation.addAll(ArchitectureGenerator.getInstance().generateRandomPopulation(termCrit.getPopulationSize()));
+            //currentPopulation.addAll(ArchitectureGenerator.getInstance().generateRandomPopulation(termCrit.getPopulationSize()));
         }
     }
 

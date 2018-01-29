@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
 
 public class PrintData {
     public static void main(String[] args) {
-        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2017-12-11_22-30-26_test.rs";
+        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2017-12-11_22-22-02_test.rs";
         ResultCollection resultCollection = null;
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
@@ -21,6 +21,7 @@ public class PrintData {
         }
 
         String csvFile = "./results/out.csv";
+        int count = 0;
         try (BufferedWriter outputWriter = new BufferedWriter(new FileWriter(csvFile))) {
             for (Result result: resultCollection.getFront()) {
                 outputWriter.write(result.getArch().toBitString());
@@ -29,10 +30,14 @@ public class PrintData {
                 outputWriter.write(",");
                 outputWriter.write(Double.toString(result.getCost()));
                 outputWriter.newLine();
+                if (result.getScience() == 0.0) {
+                    count++;
+                }
             }
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(count);
     }
 }
