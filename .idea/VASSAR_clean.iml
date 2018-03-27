@@ -15,5 +15,6 @@
     <orderEntry type="library" exported="" name="combinatoricslib-2.0" level="project" />
     <orderEntry type="library" exported="" name="org.junit.jupiter:junit-jupiter-api:5.0.2" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="org.apache.thrift:libthrift:0.11.0" level="project" />
   </component>
 </module>
