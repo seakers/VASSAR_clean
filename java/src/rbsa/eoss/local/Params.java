@@ -75,7 +75,7 @@ public class Params {
     public double maxScience;
     public double minCost;
     public double maxCost;
-    public  double probAccept = 0.8;
+    public double probAccept = 0.8;
 
     // Instruments
     public String[] instrumentList = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR","DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};

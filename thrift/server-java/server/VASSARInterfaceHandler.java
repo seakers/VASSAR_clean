@@ -20,6 +20,7 @@ package server;
  */
 
 
+import java.lang.reflect.Field;
 import java.util.*;
 import rbsa.eoss.local.Params;
 import javaInterface.BinaryInputArchitecture;
@@ -209,6 +210,21 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         }
 
         return explanations;
+    }
+
+    public int changeLoadedFiles(Map<String, String> params_map) {
+        try {
+            for (Map.Entry<String, String> entry : params_map.entrySet()) {
+                Field field = Params.class.getField(entry.getKey());
+                field.set(params, params.path + entry.getValue());
+            }
+            initJess();
+            return 0;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
     }
 }
 

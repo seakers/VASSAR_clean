@@ -70,6 +70,10 @@ public class ResultCollection implements java.io.Serializable {
         this.name = inputFile;
     }
 
+    public Stack<Result> getResults() {
+        return results;
+    }
+
     public ArrayList<Architecture> getPopulation() {
         ArrayList<Architecture> pop = new ArrayList<>();
         for (Result res: front)
