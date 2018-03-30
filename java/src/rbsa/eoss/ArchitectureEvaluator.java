@@ -18,6 +18,10 @@ public class ArchitectureEvaluator {
         }
         return instance;
     }
+
+    public static ArchitectureEvaluator getNewInstance() {
+        return new ArchitectureEvaluator();
+    }
     
     private static ArchitectureEvaluator instance = null;
 
@@ -38,6 +42,22 @@ public class ArchitectureEvaluator {
 
     public void init(int numCPU) {
         params = Params.getInstance();
+        resourcePool = new ResourcePool(numCPU);
+        searchRes = new Resource();
+        executorService = Executors.newFixedThreadPool(numCPU);
+        results.clear();
+        futures.clear();
+        if (!params.runMode.equalsIgnoreCase("update_scores")) {
+            setScores(params.scores);
+            setSubobjScores(params.subobjScores);
+        }
+        if (!params.runMode.equalsIgnoreCase("update_dsms")) {
+            setDsmMap(params.allDsms);
+        }
+    }
+
+    public void init(int numCPU, Params specialParams) {
+        params = specialParams;
         resourcePool = new ResourcePool(numCPU);
         searchRes = new Resource();
         executorService = Executors.newFixedThreadPool(numCPU);

@@ -22,6 +22,8 @@ package server;
 
 import java.lang.reflect.Field;
 import java.util.*;
+
+import org.apache.thrift.TException;
 import rbsa.eoss.local.Params;
 import javaInterface.BinaryInputArchitecture;
 import javaInterface.VASSARInterface;
@@ -34,7 +36,9 @@ import rbsa.eoss.CritiqueGenerator;
 public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
     private Params params;
+    private Params specialParams;
     private ArchitectureEvaluator AE = null;
+    private ArchitectureEvaluator specialAE = null;
 
     public VASSARInterfaceHandler() {
         initJess();
@@ -55,6 +59,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         AE.init(1);
     }
 
+    @Override
     public BinaryInputArchitecture eval(List<Boolean> boolList) {
         // Input a new architecture design
         // There must be 5 orbits. Instrument name is represented by a capital letter, taken from {A,B,C,D,E,F,G,H,I,J,K,L}
@@ -78,6 +83,32 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         outputs.add(cost);
         
         System.out.println("Performance Score: " + science + ", Cost: " + cost);
+        return new BinaryInputArchitecture(0, boolList, outputs);
+    }
+
+    @Override
+    public BinaryInputArchitecture evalSpecial(List<Boolean> boolList) throws TException {
+        // Input a new architecture design
+        // There must be 5 orbits. Instrument name is represented by a capital letter, taken from {A,B,C,D,E,F,G,H,I,J,K,L}
+        String bitString = "";
+        for (Boolean b: boolList) {
+            bitString += b ? "1" : "0";
+        }
+
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+
+        // Evaluate the architecture
+        Result result = specialAE.evaluateArchitecture(architecture,"Slow");
+
+        // Save the score and the cost
+        double cost = result.getCost();
+        double science = result.getScience();
+        List<Double> outputs = new ArrayList<>();
+        outputs.add(science);
+        outputs.add(cost);
+
+        System.out.println("Special Performance Score: " + science + ", Cost: " + cost);
         return new BinaryInputArchitecture(0, boolList, outputs);
     }
 
@@ -115,7 +146,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return out;
     }
 
-    private ArrayList<String> randomLocalChange(String bitString, int n, int experiment_stage){
+    private ArrayList<String> randomLocalChange(String bitString, int n, int experiment_stage) {
         Random rand = new Random();
         int numVars = params.orbitList.length * params.instrumentList.length;
 
@@ -212,13 +243,20 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return explanations;
     }
 
-    public int changeLoadedFiles(Map<String, String> params_map) {
+    @Override
+    public int changeLoadedFiles(Map<String, String> params_map) throws TException {
+        // Set a path to the project folder
+        String path = System.getProperty("user.dir");
+        // Initialization
+        String search_clps = "";
+        specialParams = Params.newInstance(path, "FUZZY-ATTRIBUTES", "test","normal", search_clps);
         try {
             for (Map.Entry<String, String> entry : params_map.entrySet()) {
                 Field field = Params.class.getField(entry.getKey());
-                field.set(params, params.path + entry.getValue());
+                field.set(specialParams, specialParams.path + entry.getValue());
             }
-            initJess();
+            specialAE = ArchitectureEvaluator.getNewInstance();
+            specialAE.init(1, specialParams);
             return 0;
         }
         catch (Exception e) {

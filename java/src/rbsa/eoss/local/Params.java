@@ -20,6 +20,10 @@ public class Params {
         return instance;
     }
 
+    public static Params newInstance(String p, String mode, String name, String runMode, String searchClp) {
+        return new Params(p, mode, name, runMode, searchClp);
+    }
+
     public static Params getInstance() {
         return instance;
     }
