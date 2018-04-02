@@ -143,6 +143,27 @@ public class ArchitectureGenerator {
         return popu;
     }
 
+    public ArrayList<Architecture> generateBiasedRandomPopulation(int numArchs, double bias) {
+        int genomeLength = params.numInstr * params.numOrbits;
+        ArrayList<Architecture> popu = new ArrayList<>(numArchs);
+        try {
+            for (int i = 0; i < numArchs; i++) {
+                boolean[] x = new boolean[genomeLength];
+                for (int j = 0; j < genomeLength; j++) {
+                    x[j] = rnd.nextDouble() < bias;
+                }
+                Architecture arch = new Architecture(x, params.numOrbits, params.numInstr,
+                        params.numSatellites[rnd.nextInt(params.numSatellites.length)]);
+                //arch.setEval_mode("DEBUG");
+                popu.add(arch);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+
+        return popu;
+    }
+
     public Architecture getMaxArch() { // SMAP 2 SSO orbits, 2 sats per orbit
         Architecture arch = new Architecture("111111111111111111111111000000000000000000000000000000000000",1);
         arch.setEvalMode("DEBUG");

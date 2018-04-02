@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
 
 public class PrintData {
     public static void main(String[] args) {
-        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2018-03-28_22-29-48_test.rs";
+        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2018-03-30_16-32-01_test.rs";
         ResultCollection resultCollection = null;
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {

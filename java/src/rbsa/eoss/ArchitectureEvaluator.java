@@ -97,7 +97,6 @@ public class ArchitectureEvaluator {
         for (Future<Result> future: futures) {
             try {
                 Result resu = future.get(); // Do something with the results..
-                System.out.println(resu.toString());
                 pushResult(resu);
                 // TODO: Add a quality check to see if science < 1 and arch is not empty. Push only if it passes quality control
             }
