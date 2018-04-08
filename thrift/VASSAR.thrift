@@ -77,7 +77,7 @@ service VASSARInterface {
    
    list<string> getCritique(1:list<bool> inputs),
 
-   list<ObjectiveSatisfaction> getScoreExplanation(1:list<bool> arch),
+   list<ObjectiveSatisfaction> getScoreExplanation(1:list<bool> arch, 2:bool useSpecial),
 
    int changeLoadedFiles(1: map<string,string> params_map)
 }

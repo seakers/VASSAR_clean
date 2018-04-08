@@ -178,6 +178,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return out;
     }
 
+    @Override
     public List<String> getCritique(List<Boolean> boolList) {
         String bitString = "";
         for(Boolean b: boolList){
@@ -195,6 +196,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return critiquer.getCritique();
     }
 
+    @Override
     public ArrayList<String> getOrbitList() {
         ArrayList<String> orbitList = new ArrayList<>();
         for(String o: params.orbitList){
@@ -203,6 +205,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return orbitList;
     }
 
+    @Override
     public ArrayList<String> getInstrumentList() {
         ArrayList<String> instrumentList = new ArrayList<>();
         for (String i: params.instrumentList) {
@@ -211,6 +214,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return instrumentList;
     }
 
+    @Override
     public ArrayList<String> getObjectiveList() {
         ArrayList<String> objectiveList = new ArrayList<>();
         params.objectiveDescriptions.forEach((k, v) -> {
@@ -219,7 +223,8 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return objectiveList;
     }
 
-    public List<ObjectiveSatisfaction> getScoreExplanation(List<Boolean> arch) {
+    @Override
+    public List<ObjectiveSatisfaction> getScoreExplanation(List<Boolean> arch, boolean useSpecial) {
         String bitString = "";
         for (Boolean b: arch) {
             bitString += b ? "1" : "0";
@@ -230,14 +235,22 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         architecture.setEvalMode("DEBUG");
 
         // Evaluate the architecture
-        Result result = AE.evaluateArchitecture(architecture, "Slow");
-
+        Result result = null;
         // Save the explanations for each stakeholder score
         List<ObjectiveSatisfaction> explanations = new ArrayList<>();
-
-        for (int i = 0; i < params.panelNames.size(); ++i) {
-            explanations.add(new ObjectiveSatisfaction(params.panelNames.get(i),
-                    result.getPanelScores().get(i), params.panelWeights.get(i)));
+        if (useSpecial) {
+            result = specialAE.evaluateArchitecture(architecture, "Slow");
+            for (int i = 0; i < specialParams.panelNames.size(); ++i) {
+                explanations.add(new ObjectiveSatisfaction(specialParams.panelNames.get(i),
+                        result.getPanelScores().get(i), specialParams.panelWeights.get(i)));
+            }
+        }
+        else {
+            result = AE.evaluateArchitecture(architecture, "Slow");
+            for (int i = 0; i < params.panelNames.size(); ++i) {
+                explanations.add(new ObjectiveSatisfaction(params.panelNames.get(i),
+                        result.getPanelScores().get(i), params.panelWeights.get(i)));
+            }
         }
 
         return explanations;

@@ -66,10 +66,11 @@ class Iface(object):
         """
         pass
 
-    def getScoreExplanation(self, arch):
+    def getScoreExplanation(self, arch, useSpecial):
         """
         Parameters:
          - arch
+         - useSpecial
         """
         pass
 
@@ -322,18 +323,20 @@ class Client(Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "getCritique failed: unknown result")
 
-    def getScoreExplanation(self, arch):
+    def getScoreExplanation(self, arch, useSpecial):
         """
         Parameters:
          - arch
+         - useSpecial
         """
-        self.send_getScoreExplanation(arch)
+        self.send_getScoreExplanation(arch, useSpecial)
         return self.recv_getScoreExplanation()
 
-    def send_getScoreExplanation(self, arch):
+    def send_getScoreExplanation(self, arch, useSpecial):
         self._oprot.writeMessageBegin('getScoreExplanation', TMessageType.CALL, self._seqid)
         args = getScoreExplanation_args()
         args.arch = arch
+        args.useSpecial = useSpecial
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -605,7 +608,7 @@ class Processor(Iface, TProcessor):
         iprot.readMessageEnd()
         result = getScoreExplanation_result()
         try:
-            result.success = self._handler.getScoreExplanation(args.arch)
+            result.success = self._handler.getScoreExplanation(args.arch, args.useSpecial)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -1618,11 +1621,13 @@ class getScoreExplanation_args(object):
     """
     Attributes:
      - arch
+     - useSpecial
     """
 
 
-    def __init__(self, arch=None,):
+    def __init__(self, arch=None, useSpecial=None,):
         self.arch = arch
+        self.useSpecial = useSpecial
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -1643,6 +1648,11 @@ class getScoreExplanation_args(object):
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.BOOL:
+                    self.useSpecial = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -1659,6 +1669,10 @@ class getScoreExplanation_args(object):
             for iter83 in self.arch:
                 oprot.writeBool(iter83)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.useSpecial is not None:
+            oprot.writeFieldBegin('useSpecial', TType.BOOL, 2)
+            oprot.writeBool(self.useSpecial)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -1680,6 +1694,7 @@ all_structs.append(getScoreExplanation_args)
 getScoreExplanation_args.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'arch', (TType.BOOL, None, False), None, ),  # 1
+    (2, TType.BOOL, 'useSpecial', None, None, ),  # 2
 )
 
 
