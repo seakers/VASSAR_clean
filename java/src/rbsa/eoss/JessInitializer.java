@@ -21,10 +21,8 @@ public class JessInitializer {
     private static JessInitializer instance = null;
 
     private Params params;
-    
-    private JessInitializer() {
-        params = Params.getInstance();
-    }
+
+    private JessInitializer() { }
     
     public static JessInitializer getInstance() {
         if (instance == null) {
@@ -33,8 +31,9 @@ public class JessInitializer {
         return instance;
     }
     
-    public void initializeJess(Rete r, QueryBuilder qb, MatlabFunctions m) {
+    public void initializeJess(Rete r, QueryBuilder qb, MatlabFunctions m, Params newParams) {
         try {
+            params = newParams;
             // Create global variable path
             String tmp = params.path.replaceAll("\\\\", "\\\\\\\\");
             r.eval("(defglobal ?*app_path* = \"" + tmp + "\")");

@@ -24,7 +24,7 @@ public class VASSARInterface {
 
     public BinaryInputArchitecture evalSpecial(java.util.List<java.lang.Boolean> inputs) throws org.apache.thrift.TException;
 
-    public java.util.List<BinaryInputArchitecture> runLocalSearch(java.util.List<java.lang.Boolean> inputs, int experiment_stage) throws org.apache.thrift.TException;
+    public java.util.List<BinaryInputArchitecture> runLocalSearch(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException;
 
     public java.util.List<java.lang.String> getOrbitList() throws org.apache.thrift.TException;
 
@@ -32,7 +32,7 @@ public class VASSARInterface {
 
     public java.util.List<java.lang.String> getObjectiveList() throws org.apache.thrift.TException;
 
-    public java.util.List<java.lang.String> getCritique(java.util.List<java.lang.Boolean> inputs) throws org.apache.thrift.TException;
+    public java.util.List<java.lang.String> getCritique(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException;
 
     public java.util.List<ObjectiveSatisfaction> getScoreExplanation(java.util.List<java.lang.Boolean> arch, boolean useSpecial) throws org.apache.thrift.TException;
 
@@ -48,7 +48,7 @@ public class VASSARInterface {
 
     public void evalSpecial(java.util.List<java.lang.Boolean> inputs, org.apache.thrift.async.AsyncMethodCallback<BinaryInputArchitecture> resultHandler) throws org.apache.thrift.TException;
 
-    public void runLocalSearch(java.util.List<java.lang.Boolean> inputs, int experiment_stage, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler) throws org.apache.thrift.TException;
+    public void runLocalSearch(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler) throws org.apache.thrift.TException;
 
     public void getOrbitList(org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException;
 
@@ -56,7 +56,7 @@ public class VASSARInterface {
 
     public void getObjectiveList(org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException;
 
-    public void getCritique(java.util.List<java.lang.Boolean> inputs, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException;
+    public void getCritique(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException;
 
     public void getScoreExplanation(java.util.List<java.lang.Boolean> arch, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<ObjectiveSatisfaction>> resultHandler) throws org.apache.thrift.TException;
 
@@ -149,17 +149,17 @@ public class VASSARInterface {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "evalSpecial failed: unknown result");
     }
 
-    public java.util.List<BinaryInputArchitecture> runLocalSearch(java.util.List<java.lang.Boolean> inputs, int experiment_stage) throws org.apache.thrift.TException
+    public java.util.List<BinaryInputArchitecture> runLocalSearch(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException
     {
-      send_runLocalSearch(inputs, experiment_stage);
+      send_runLocalSearch(inputs, useSpecial);
       return recv_runLocalSearch();
     }
 
-    public void send_runLocalSearch(java.util.List<java.lang.Boolean> inputs, int experiment_stage) throws org.apache.thrift.TException
+    public void send_runLocalSearch(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException
     {
       runLocalSearch_args args = new runLocalSearch_args();
       args.setInputs(inputs);
-      args.setExperiment_stage(experiment_stage);
+      args.setUseSpecial(useSpecial);
       sendBase("runLocalSearch", args);
     }
 
@@ -239,16 +239,17 @@ public class VASSARInterface {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getObjectiveList failed: unknown result");
     }
 
-    public java.util.List<java.lang.String> getCritique(java.util.List<java.lang.Boolean> inputs) throws org.apache.thrift.TException
+    public java.util.List<java.lang.String> getCritique(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException
     {
-      send_getCritique(inputs);
+      send_getCritique(inputs, useSpecial);
       return recv_getCritique();
     }
 
-    public void send_getCritique(java.util.List<java.lang.Boolean> inputs) throws org.apache.thrift.TException
+    public void send_getCritique(java.util.List<java.lang.Boolean> inputs, boolean useSpecial) throws org.apache.thrift.TException
     {
       getCritique_args args = new getCritique_args();
       args.setInputs(inputs);
+      args.setUseSpecial(useSpecial);
       sendBase("getCritique", args);
     }
 
@@ -420,27 +421,27 @@ public class VASSARInterface {
       }
     }
 
-    public void runLocalSearch(java.util.List<java.lang.Boolean> inputs, int experiment_stage, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler) throws org.apache.thrift.TException {
+    public void runLocalSearch(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      runLocalSearch_call method_call = new runLocalSearch_call(inputs, experiment_stage, resultHandler, this, ___protocolFactory, ___transport);
+      runLocalSearch_call method_call = new runLocalSearch_call(inputs, useSpecial, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class runLocalSearch_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<BinaryInputArchitecture>> {
       private java.util.List<java.lang.Boolean> inputs;
-      private int experiment_stage;
-      public runLocalSearch_call(java.util.List<java.lang.Boolean> inputs, int experiment_stage, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private boolean useSpecial;
+      public runLocalSearch_call(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.inputs = inputs;
-        this.experiment_stage = experiment_stage;
+        this.useSpecial = useSpecial;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("runLocalSearch", org.apache.thrift.protocol.TMessageType.CALL, 0));
         runLocalSearch_args args = new runLocalSearch_args();
         args.setInputs(inputs);
-        args.setExperiment_stage(experiment_stage);
+        args.setUseSpecial(useSpecial);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -542,24 +543,27 @@ public class VASSARInterface {
       }
     }
 
-    public void getCritique(java.util.List<java.lang.Boolean> inputs, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException {
+    public void getCritique(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getCritique_call method_call = new getCritique_call(inputs, resultHandler, this, ___protocolFactory, ___transport);
+      getCritique_call method_call = new getCritique_call(inputs, useSpecial, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getCritique_call extends org.apache.thrift.async.TAsyncMethodCall<java.util.List<java.lang.String>> {
       private java.util.List<java.lang.Boolean> inputs;
-      public getCritique_call(java.util.List<java.lang.Boolean> inputs, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private boolean useSpecial;
+      public getCritique_call(java.util.List<java.lang.Boolean> inputs, boolean useSpecial, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.inputs = inputs;
+        this.useSpecial = useSpecial;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getCritique", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getCritique_args args = new getCritique_args();
         args.setInputs(inputs);
+        args.setUseSpecial(useSpecial);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -762,7 +766,7 @@ public class VASSARInterface {
 
       public runLocalSearch_result getResult(I iface, runLocalSearch_args args) throws org.apache.thrift.TException {
         runLocalSearch_result result = new runLocalSearch_result();
-        result.success = iface.runLocalSearch(args.inputs, args.experiment_stage);
+        result.success = iface.runLocalSearch(args.inputs, args.useSpecial);
         return result;
       }
     }
@@ -862,7 +866,7 @@ public class VASSARInterface {
 
       public getCritique_result getResult(I iface, getCritique_args args) throws org.apache.thrift.TException {
         getCritique_result result = new getCritique_result();
-        result.success = iface.getCritique(args.inputs);
+        result.success = iface.getCritique(args.inputs, args.useSpecial);
         return result;
       }
     }
@@ -1183,7 +1187,7 @@ public class VASSARInterface {
       }
 
       public void start(I iface, runLocalSearch_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<BinaryInputArchitecture>> resultHandler) throws org.apache.thrift.TException {
-        iface.runLocalSearch(args.inputs, args.experiment_stage,resultHandler);
+        iface.runLocalSearch(args.inputs, args.useSpecial,resultHandler);
       }
     }
 
@@ -1427,7 +1431,7 @@ public class VASSARInterface {
       }
 
       public void start(I iface, getCritique_args args, org.apache.thrift.async.AsyncMethodCallback<java.util.List<java.lang.String>> resultHandler) throws org.apache.thrift.TException {
-        iface.getCritique(args.inputs,resultHandler);
+        iface.getCritique(args.inputs, args.useSpecial,resultHandler);
       }
     }
 
@@ -3616,18 +3620,18 @@ public class VASSARInterface {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("runLocalSearch_args");
 
     private static final org.apache.thrift.protocol.TField INPUTS_FIELD_DESC = new org.apache.thrift.protocol.TField("inputs", org.apache.thrift.protocol.TType.LIST, (short)1);
-    private static final org.apache.thrift.protocol.TField EXPERIMENT_STAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("experiment_stage", org.apache.thrift.protocol.TType.I32, (short)2);
+    private static final org.apache.thrift.protocol.TField USE_SPECIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("useSpecial", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new runLocalSearch_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new runLocalSearch_argsTupleSchemeFactory();
 
     public java.util.List<java.lang.Boolean> inputs; // required
-    public int experiment_stage; // required
+    public boolean useSpecial; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       INPUTS((short)1, "inputs"),
-      EXPERIMENT_STAGE((short)2, "experiment_stage");
+      USE_SPECIAL((short)2, "useSpecial");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -3644,8 +3648,8 @@ public class VASSARInterface {
         switch(fieldId) {
           case 1: // INPUTS
             return INPUTS;
-          case 2: // EXPERIMENT_STAGE
-            return EXPERIMENT_STAGE;
+          case 2: // USE_SPECIAL
+            return USE_SPECIAL;
           default:
             return null;
         }
@@ -3686,7 +3690,7 @@ public class VASSARInterface {
     }
 
     // isset id assignments
-    private static final int __EXPERIMENT_STAGE_ISSET_ID = 0;
+    private static final int __USESPECIAL_ISSET_ID = 0;
     private byte __isset_bitfield = 0;
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
@@ -3694,8 +3698,8 @@ public class VASSARInterface {
       tmpMap.put(_Fields.INPUTS, new org.apache.thrift.meta_data.FieldMetaData("inputs", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL))));
-      tmpMap.put(_Fields.EXPERIMENT_STAGE, new org.apache.thrift.meta_data.FieldMetaData("experiment_stage", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32          , "int")));
+      tmpMap.put(_Fields.USE_SPECIAL, new org.apache.thrift.meta_data.FieldMetaData("useSpecial", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(runLocalSearch_args.class, metaDataMap);
     }
@@ -3705,12 +3709,12 @@ public class VASSARInterface {
 
     public runLocalSearch_args(
       java.util.List<java.lang.Boolean> inputs,
-      int experiment_stage)
+      boolean useSpecial)
     {
       this();
       this.inputs = inputs;
-      this.experiment_stage = experiment_stage;
-      setExperiment_stageIsSet(true);
+      this.useSpecial = useSpecial;
+      setUseSpecialIsSet(true);
     }
 
     /**
@@ -3722,7 +3726,7 @@ public class VASSARInterface {
         java.util.List<java.lang.Boolean> __this__inputs = new java.util.ArrayList<java.lang.Boolean>(other.inputs);
         this.inputs = __this__inputs;
       }
-      this.experiment_stage = other.experiment_stage;
+      this.useSpecial = other.useSpecial;
     }
 
     public runLocalSearch_args deepCopy() {
@@ -3732,8 +3736,8 @@ public class VASSARInterface {
     @Override
     public void clear() {
       this.inputs = null;
-      setExperiment_stageIsSet(false);
-      this.experiment_stage = 0;
+      setUseSpecialIsSet(false);
+      this.useSpecial = false;
     }
 
     public int getInputsSize() {
@@ -3775,27 +3779,27 @@ public class VASSARInterface {
       }
     }
 
-    public int getExperiment_stage() {
-      return this.experiment_stage;
+    public boolean isUseSpecial() {
+      return this.useSpecial;
     }
 
-    public runLocalSearch_args setExperiment_stage(int experiment_stage) {
-      this.experiment_stage = experiment_stage;
-      setExperiment_stageIsSet(true);
+    public runLocalSearch_args setUseSpecial(boolean useSpecial) {
+      this.useSpecial = useSpecial;
+      setUseSpecialIsSet(true);
       return this;
     }
 
-    public void unsetExperiment_stage() {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __EXPERIMENT_STAGE_ISSET_ID);
+    public void unsetUseSpecial() {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __USESPECIAL_ISSET_ID);
     }
 
-    /** Returns true if field experiment_stage is set (has been assigned a value) and false otherwise */
-    public boolean isSetExperiment_stage() {
-      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __EXPERIMENT_STAGE_ISSET_ID);
+    /** Returns true if field useSpecial is set (has been assigned a value) and false otherwise */
+    public boolean isSetUseSpecial() {
+      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __USESPECIAL_ISSET_ID);
     }
 
-    public void setExperiment_stageIsSet(boolean value) {
-      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EXPERIMENT_STAGE_ISSET_ID, value);
+    public void setUseSpecialIsSet(boolean value) {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __USESPECIAL_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, java.lang.Object value) {
@@ -3808,11 +3812,11 @@ public class VASSARInterface {
         }
         break;
 
-      case EXPERIMENT_STAGE:
+      case USE_SPECIAL:
         if (value == null) {
-          unsetExperiment_stage();
+          unsetUseSpecial();
         } else {
-          setExperiment_stage((java.lang.Integer)value);
+          setUseSpecial((java.lang.Boolean)value);
         }
         break;
 
@@ -3824,8 +3828,8 @@ public class VASSARInterface {
       case INPUTS:
         return getInputs();
 
-      case EXPERIMENT_STAGE:
-        return getExperiment_stage();
+      case USE_SPECIAL:
+        return isUseSpecial();
 
       }
       throw new java.lang.IllegalStateException();
@@ -3840,8 +3844,8 @@ public class VASSARInterface {
       switch (field) {
       case INPUTS:
         return isSetInputs();
-      case EXPERIMENT_STAGE:
-        return isSetExperiment_stage();
+      case USE_SPECIAL:
+        return isSetUseSpecial();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -3870,12 +3874,12 @@ public class VASSARInterface {
           return false;
       }
 
-      boolean this_present_experiment_stage = true;
-      boolean that_present_experiment_stage = true;
-      if (this_present_experiment_stage || that_present_experiment_stage) {
-        if (!(this_present_experiment_stage && that_present_experiment_stage))
+      boolean this_present_useSpecial = true;
+      boolean that_present_useSpecial = true;
+      if (this_present_useSpecial || that_present_useSpecial) {
+        if (!(this_present_useSpecial && that_present_useSpecial))
           return false;
-        if (this.experiment_stage != that.experiment_stage)
+        if (this.useSpecial != that.useSpecial)
           return false;
       }
 
@@ -3890,7 +3894,7 @@ public class VASSARInterface {
       if (isSetInputs())
         hashCode = hashCode * 8191 + inputs.hashCode();
 
-      hashCode = hashCode * 8191 + experiment_stage;
+      hashCode = hashCode * 8191 + ((useSpecial) ? 131071 : 524287);
 
       return hashCode;
     }
@@ -3913,12 +3917,12 @@ public class VASSARInterface {
           return lastComparison;
         }
       }
-      lastComparison = java.lang.Boolean.valueOf(isSetExperiment_stage()).compareTo(other.isSetExperiment_stage());
+      lastComparison = java.lang.Boolean.valueOf(isSetUseSpecial()).compareTo(other.isSetUseSpecial());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetExperiment_stage()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.experiment_stage, other.experiment_stage);
+      if (isSetUseSpecial()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.useSpecial, other.useSpecial);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3951,8 +3955,8 @@ public class VASSARInterface {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("experiment_stage:");
-      sb.append(this.experiment_stage);
+      sb.append("useSpecial:");
+      sb.append(this.useSpecial);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -4017,10 +4021,10 @@ public class VASSARInterface {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // EXPERIMENT_STAGE
-              if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-                struct.experiment_stage = iprot.readI32();
-                struct.setExperiment_stageIsSet(true);
+            case 2: // USE_SPECIAL
+              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+                struct.useSpecial = iprot.readBool();
+                struct.setUseSpecialIsSet(true);
               } else { 
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -4052,8 +4056,8 @@ public class VASSARInterface {
           }
           oprot.writeFieldEnd();
         }
-        oprot.writeFieldBegin(EXPERIMENT_STAGE_FIELD_DESC);
-        oprot.writeI32(struct.experiment_stage);
+        oprot.writeFieldBegin(USE_SPECIAL_FIELD_DESC);
+        oprot.writeBool(struct.useSpecial);
         oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
@@ -4076,7 +4080,7 @@ public class VASSARInterface {
         if (struct.isSetInputs()) {
           optionals.set(0);
         }
-        if (struct.isSetExperiment_stage()) {
+        if (struct.isSetUseSpecial()) {
           optionals.set(1);
         }
         oprot.writeBitSet(optionals, 2);
@@ -4089,8 +4093,8 @@ public class VASSARInterface {
             }
           }
         }
-        if (struct.isSetExperiment_stage()) {
-          oprot.writeI32(struct.experiment_stage);
+        if (struct.isSetUseSpecial()) {
+          oprot.writeBool(struct.useSpecial);
         }
       }
 
@@ -4112,8 +4116,8 @@ public class VASSARInterface {
           struct.setInputsIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.experiment_stage = iprot.readI32();
-          struct.setExperiment_stageIsSet(true);
+          struct.useSpecial = iprot.readBool();
+          struct.setUseSpecialIsSet(true);
         }
       }
     }
@@ -6526,15 +6530,18 @@ public class VASSARInterface {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getCritique_args");
 
     private static final org.apache.thrift.protocol.TField INPUTS_FIELD_DESC = new org.apache.thrift.protocol.TField("inputs", org.apache.thrift.protocol.TType.LIST, (short)1);
+    private static final org.apache.thrift.protocol.TField USE_SPECIAL_FIELD_DESC = new org.apache.thrift.protocol.TField("useSpecial", org.apache.thrift.protocol.TType.BOOL, (short)2);
 
     private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new getCritique_argsStandardSchemeFactory();
     private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new getCritique_argsTupleSchemeFactory();
 
     public java.util.List<java.lang.Boolean> inputs; // required
+    public boolean useSpecial; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      INPUTS((short)1, "inputs");
+      INPUTS((short)1, "inputs"),
+      USE_SPECIAL((short)2, "useSpecial");
 
       private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -6551,6 +6558,8 @@ public class VASSARInterface {
         switch(fieldId) {
           case 1: // INPUTS
             return INPUTS;
+          case 2: // USE_SPECIAL
+            return USE_SPECIAL;
           default:
             return null;
         }
@@ -6591,12 +6600,16 @@ public class VASSARInterface {
     }
 
     // isset id assignments
+    private static final int __USESPECIAL_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
     public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.INPUTS, new org.apache.thrift.meta_data.FieldMetaData("inputs", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
               new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL))));
+      tmpMap.put(_Fields.USE_SPECIAL, new org.apache.thrift.meta_data.FieldMetaData("useSpecial", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
       metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getCritique_args.class, metaDataMap);
     }
@@ -6605,20 +6618,25 @@ public class VASSARInterface {
     }
 
     public getCritique_args(
-      java.util.List<java.lang.Boolean> inputs)
+      java.util.List<java.lang.Boolean> inputs,
+      boolean useSpecial)
     {
       this();
       this.inputs = inputs;
+      this.useSpecial = useSpecial;
+      setUseSpecialIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public getCritique_args(getCritique_args other) {
+      __isset_bitfield = other.__isset_bitfield;
       if (other.isSetInputs()) {
         java.util.List<java.lang.Boolean> __this__inputs = new java.util.ArrayList<java.lang.Boolean>(other.inputs);
         this.inputs = __this__inputs;
       }
+      this.useSpecial = other.useSpecial;
     }
 
     public getCritique_args deepCopy() {
@@ -6628,6 +6646,8 @@ public class VASSARInterface {
     @Override
     public void clear() {
       this.inputs = null;
+      setUseSpecialIsSet(false);
+      this.useSpecial = false;
     }
 
     public int getInputsSize() {
@@ -6669,6 +6689,29 @@ public class VASSARInterface {
       }
     }
 
+    public boolean isUseSpecial() {
+      return this.useSpecial;
+    }
+
+    public getCritique_args setUseSpecial(boolean useSpecial) {
+      this.useSpecial = useSpecial;
+      setUseSpecialIsSet(true);
+      return this;
+    }
+
+    public void unsetUseSpecial() {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __USESPECIAL_ISSET_ID);
+    }
+
+    /** Returns true if field useSpecial is set (has been assigned a value) and false otherwise */
+    public boolean isSetUseSpecial() {
+      return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __USESPECIAL_ISSET_ID);
+    }
+
+    public void setUseSpecialIsSet(boolean value) {
+      __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __USESPECIAL_ISSET_ID, value);
+    }
+
     public void setFieldValue(_Fields field, java.lang.Object value) {
       switch (field) {
       case INPUTS:
@@ -6679,6 +6722,14 @@ public class VASSARInterface {
         }
         break;
 
+      case USE_SPECIAL:
+        if (value == null) {
+          unsetUseSpecial();
+        } else {
+          setUseSpecial((java.lang.Boolean)value);
+        }
+        break;
+
       }
     }
 
@@ -6686,6 +6737,9 @@ public class VASSARInterface {
       switch (field) {
       case INPUTS:
         return getInputs();
+
+      case USE_SPECIAL:
+        return isUseSpecial();
 
       }
       throw new java.lang.IllegalStateException();
@@ -6700,6 +6754,8 @@ public class VASSARInterface {
       switch (field) {
       case INPUTS:
         return isSetInputs();
+      case USE_SPECIAL:
+        return isSetUseSpecial();
       }
       throw new java.lang.IllegalStateException();
     }
@@ -6728,6 +6784,15 @@ public class VASSARInterface {
           return false;
       }
 
+      boolean this_present_useSpecial = true;
+      boolean that_present_useSpecial = true;
+      if (this_present_useSpecial || that_present_useSpecial) {
+        if (!(this_present_useSpecial && that_present_useSpecial))
+          return false;
+        if (this.useSpecial != that.useSpecial)
+          return false;
+      }
+
       return true;
     }
 
@@ -6738,6 +6803,8 @@ public class VASSARInterface {
       hashCode = hashCode * 8191 + ((isSetInputs()) ? 131071 : 524287);
       if (isSetInputs())
         hashCode = hashCode * 8191 + inputs.hashCode();
+
+      hashCode = hashCode * 8191 + ((useSpecial) ? 131071 : 524287);
 
       return hashCode;
     }
@@ -6756,6 +6823,16 @@ public class VASSARInterface {
       }
       if (isSetInputs()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.inputs, other.inputs);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = java.lang.Boolean.valueOf(isSetUseSpecial()).compareTo(other.isSetUseSpecial());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUseSpecial()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.useSpecial, other.useSpecial);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -6787,6 +6864,10 @@ public class VASSARInterface {
         sb.append(this.inputs);
       }
       first = false;
+      if (!first) sb.append(", ");
+      sb.append("useSpecial:");
+      sb.append(this.useSpecial);
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -6806,6 +6887,8 @@ public class VASSARInterface {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);
@@ -6848,6 +6931,14 @@ public class VASSARInterface {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 2: // USE_SPECIAL
+              if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+                struct.useSpecial = iprot.readBool();
+                struct.setUseSpecialIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -6875,6 +6966,9 @@ public class VASSARInterface {
           }
           oprot.writeFieldEnd();
         }
+        oprot.writeFieldBegin(USE_SPECIAL_FIELD_DESC);
+        oprot.writeBool(struct.useSpecial);
+        oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -6896,7 +6990,10 @@ public class VASSARInterface {
         if (struct.isSetInputs()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetUseSpecial()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetInputs()) {
           {
             oprot.writeI32(struct.inputs.size());
@@ -6906,12 +7003,15 @@ public class VASSARInterface {
             }
           }
         }
+        if (struct.isSetUseSpecial()) {
+          oprot.writeBool(struct.useSpecial);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getCritique_args struct) throws org.apache.thrift.TException {
         org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-        java.util.BitSet incoming = iprot.readBitSet(1);
+        java.util.BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
             org.apache.thrift.protocol.TList _list77 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.BOOL, iprot.readI32());
@@ -6924,6 +7024,10 @@ public class VASSARInterface {
             }
           }
           struct.setInputsIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.useSpecial = iprot.readBool();
+          struct.setUseSpecialIsSet(true);
         }
       }
     }

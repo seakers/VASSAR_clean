@@ -5,6 +5,7 @@
 package rbsa.eoss;
 
 import jess.*;
+import rbsa.eoss.local.Params;
 
 public class Resource {
     
@@ -12,13 +13,13 @@ public class Resource {
     private QueryBuilder qb;
     private MatlabFunctions m;
     
-    public Resource() {
+    public Resource(Params params) {
         r = new Rete();
         qb = new QueryBuilder(r);
         m = new MatlabFunctions(this);
         r.addUserfunction(m);
         
-        JessInitializer.getInstance().initializeJess(r, qb, m);
+        JessInitializer.getInstance().initializeJess(r, qb, m, params);
     }
     
     public Rete getRete() {

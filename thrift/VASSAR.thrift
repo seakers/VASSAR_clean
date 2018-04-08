@@ -67,7 +67,7 @@ service VASSARInterface {
 
    BinaryInputArchitecture evalSpecial(1:list<bool> inputs),
 
-   list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs, 2:int experiment_stage),
+   list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs, 2:bool useSpecial),
    
    list<string> getOrbitList(),
    
@@ -75,7 +75,7 @@ service VASSARInterface {
 
    list<string> getObjectiveList(),
    
-   list<string> getCritique(1:list<bool> inputs),
+   list<string> getCritique(1:list<bool> inputs, 2:bool useSpecial),
 
    list<ObjectiveSatisfaction> getScoreExplanation(1:list<bool> arch, 2:bool useSpecial),
 

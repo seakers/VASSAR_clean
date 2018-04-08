@@ -4,17 +4,19 @@
  */
 package rbsa.eoss;
 
+import rbsa.eoss.local.Params;
+
 import java.util.Stack;
 
 public class ResourcePool 
 {
     private Stack<Resource> pool;
     
-    public ResourcePool(int numCPU) {
+    public ResourcePool(int numCPU, Params params) {
         pool = new Stack<>();
         
         for (int i = 0; i < numCPU; i++) {
-            Resource res = new Resource();
+            Resource res = new Resource(params);
             
             pool.push( res );
             System.out.println("Resource " + i + " initialized.");

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import jess.Rete;
+import rbsa.eoss.local.Params;
 
 /**
  *
@@ -12,9 +13,9 @@ import jess.Rete;
 public class CritiqueGenerator extends GenericTask {
     
     
-    public CritiqueGenerator (Architecture arch)
+    public CritiqueGenerator (Architecture arch, Params params)
     {
-        super(arch,"slow");        
+        super(arch,"slow", params);
     }
 
     public List<String> getCritique() {

@@ -113,13 +113,13 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
     }
 
     @Override
-    public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList, int experiment_stage) {
+    public List<BinaryInputArchitecture> runLocalSearch(List<Boolean> boolList, boolean useSpecial) {
         String bitString = "";
         for (Boolean b: boolList) {
             bitString += b ? "1" : "0";
         }
 
-        ArrayList<String> samples = randomLocalChange(bitString, 4, experiment_stage);
+        ArrayList<String> samples = randomLocalChange(bitString, 4);
 
         List<BinaryInputArchitecture> out = new ArrayList<>();
 
@@ -146,7 +146,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         return out;
     }
 
-    private ArrayList<String> randomLocalChange(String bitString, int n, int experiment_stage) {
+    private ArrayList<String> randomLocalChange(String bitString, int n) {
         Random rand = new Random();
         int numVars = params.orbitList.length * params.instrumentList.length;
 
@@ -154,9 +154,6 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         for (int i = 0; i < n; i++) {
             int k = rand.nextInt(numVars);
-            if (experiment_stage > 0) {
-                k = params.instrumentList.length*(k/params.instrumentList.length) + 6*(experiment_stage - 1) + (k%12)/2;
-            }
 
             StringBuilder tempBitString = new StringBuilder(bitString);
             if (bitString.charAt(k) == '1') {
@@ -179,7 +176,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
     }
 
     @Override
-    public List<String> getCritique(List<Boolean> boolList) {
+    public List<String> getCritique(List<Boolean> boolList, boolean useSpecial) {
         String bitString = "";
         for(Boolean b: boolList){
             bitString += b ? "1" : "0";
@@ -191,7 +188,14 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         Architecture architecture = new Architecture(bitString, 1);
 
         // Initialize Critique Generator
-        CritiqueGenerator critiquer = new CritiqueGenerator(architecture);
+        Params critiqueParams = null;
+        if (useSpecial) {
+            critiqueParams = specialParams;
+        }
+        else {
+            critiqueParams = params;
+        }
+        CritiqueGenerator critiquer = new CritiqueGenerator(architecture, critiqueParams);
 
         return critiquer.getCritique();
     }

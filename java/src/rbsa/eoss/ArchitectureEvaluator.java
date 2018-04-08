@@ -42,8 +42,8 @@ public class ArchitectureEvaluator {
 
     public void init(int numCPU) {
         params = Params.getInstance();
-        resourcePool = new ResourcePool(numCPU);
-        searchRes = new Resource();
+        resourcePool = new ResourcePool(numCPU, params);
+        searchRes = new Resource(params);
         executorService = Executors.newFixedThreadPool(numCPU);
         results.clear();
         futures.clear();
@@ -58,8 +58,8 @@ public class ArchitectureEvaluator {
 
     public void init(int numCPU, Params specialParams) {
         params = specialParams;
-        resourcePool = new ResourcePool(numCPU);
-        searchRes = new Resource();
+        resourcePool = new ResourcePool(numCPU, params);
+        searchRes = new Resource(params);
         executorService = Executors.newFixedThreadPool(numCPU);
         results.clear();
         futures.clear();
@@ -90,7 +90,7 @@ public class ArchitectureEvaluator {
 
     public void evaluatePopulation() {
         for (Architecture arch: population) {
-            GenericTask t = new GenericTask(arch, "Slow");
+            GenericTask t = new GenericTask(arch, "Slow", params);
             futures.add(executorService.submit(t));
         }
 
@@ -108,7 +108,7 @@ public class ArchitectureEvaluator {
 
     public Result evaluateArchitecture(Architecture arch, String mode) {
         if (arch.getResult().getScience() == -1) { //not yet evaluated
-            GenericTask t = new GenericTask(arch, mode);
+            GenericTask t = new GenericTask(arch, mode, params);
 
             futures.clear();
             futures.add(executorService.submit(t));
