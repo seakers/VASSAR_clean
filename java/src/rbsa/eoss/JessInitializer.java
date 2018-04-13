@@ -730,13 +730,13 @@ public class JessInitializer {
                             measurements.add(currentParam);
                             params.objectivesToMeasurements.put(objective, measurements);
                         }
-                        if (params.objectivesToMeasurements.containsKey(panel)) {
-                            params.objectivesToMeasurements.get(panel).add(currentParam);
+                        if (params.panelsToMeasurements.containsKey(panel)) {
+                            params.panelsToMeasurements.get(panel).add(currentParam);
                         }
                         else {
                             ArrayList<String> measurements = new ArrayList<>();
                             measurements.add(currentParam);
-                            params.objectivesToMeasurements.put(panel, measurements);
+                            params.panelsToMeasurements.put(panel, measurements);
                         }
                         r.eval(reqRule);
 
@@ -809,13 +809,13 @@ public class JessInitializer {
                 measurements.add(currentParam);
                 params.objectivesToMeasurements.put(objective, measurements);
             }
-            if (params.objectivesToMeasurements.containsKey(panel)) {
-                params.objectivesToMeasurements.get(panel).add(currentParam);
+            if (params.panelsToMeasurements.containsKey(panel)) {
+                params.panelsToMeasurements.get(panel).add(currentParam);
             }
             else {
                 ArrayList<String> measurements = new ArrayList<>();
                 measurements.add(currentParam);
-                params.objectivesToMeasurements.put(panel, measurements);
+                params.panelsToMeasurements.put(panel, measurements);
             }
             call2 += ")";
             r.eval(call2);
@@ -884,13 +884,13 @@ public class JessInitializer {
                             measurements.add(currentParam);
                             params.objectivesToMeasurements.put(objective, measurements);
                         }
-                        if (params.objectivesToMeasurements.containsKey(panel)) {
-                            params.objectivesToMeasurements.get(panel).add(currentParam);
+                        if (params.panelsToMeasurements.containsKey(panel)) {
+                            params.panelsToMeasurements.get(panel).add(currentParam);
                         }
                         else {
                             ArrayList<String> measurements = new ArrayList<>();
                             measurements.add(currentParam);
-                            params.objectivesToMeasurements.put(panel, measurements);
+                            params.panelsToMeasurements.put(panel, measurements);
                         }
                         r.eval(req_rule);
 
@@ -968,13 +968,13 @@ public class JessInitializer {
                 measurements.add(currentParam);
                 params.objectivesToMeasurements.put(objective, measurements);
             }
-            if (params.objectivesToMeasurements.containsKey(panel)) {
-                params.objectivesToMeasurements.get(panel).add(currentParam);
+            if (params.panelsToMeasurements.containsKey(panel)) {
+                params.panelsToMeasurements.get(panel).add(currentParam);
             }
             else {
                 ArrayList<String> measurements = new ArrayList<>();
                 measurements.add(currentParam);
-                params.objectivesToMeasurements.put(panel, measurements);
+                params.panelsToMeasurements.put(panel, measurements);
             }
             call2 += ")";
             r.eval(call2);

@@ -228,7 +228,17 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
     }
 
     @Override
-    public List<ObjectiveSatisfaction> getScoreExplanation(List<Boolean> arch, boolean useSpecial) {
+    public ArrayList<String> getInstrumentsForObjective(String objective) {
+        return new ArrayList<>(params.objectivesToInstruments.get(objective));
+    }
+
+    @Override
+    public ArrayList<String> getInstrumentsForPanel(String panel) {
+        return new ArrayList<>(params.panelsToInstruments.get(panel));
+    }
+
+    @Override
+    public List<ObjectiveSatisfaction> getArchitectureScoreExplanation(List<Boolean> arch, boolean useSpecial) {
         String bitString = "";
         for (Boolean b: arch) {
             bitString += b ? "1" : "0";
@@ -242,23 +252,112 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         Result result = null;
         // Save the explanations for each stakeholder score
         List<ObjectiveSatisfaction> explanations = new ArrayList<>();
+        ArchitectureEvaluator chosenAE = null;
+        Params chosenParams = null;
+
         if (useSpecial) {
-            result = specialAE.evaluateArchitecture(architecture, "Slow");
-            for (int i = 0; i < specialParams.panelNames.size(); ++i) {
-                explanations.add(new ObjectiveSatisfaction(specialParams.panelNames.get(i),
-                        result.getPanelScores().get(i), specialParams.panelWeights.get(i)));
-            }
+            chosenAE = specialAE;
+            chosenParams = specialParams;
         }
         else {
-            result = AE.evaluateArchitecture(architecture, "Slow");
-            for (int i = 0; i < params.panelNames.size(); ++i) {
-                explanations.add(new ObjectiveSatisfaction(params.panelNames.get(i),
-                        result.getPanelScores().get(i), params.panelWeights.get(i)));
+            chosenAE = AE;
+            chosenParams = params;
+        }
+
+        result = chosenAE.evaluateArchitecture(architecture, "Slow");
+        for (int i = 0; i < chosenParams.panelNames.size(); ++i) {
+            explanations.add(new ObjectiveSatisfaction(chosenParams.panelNames.get(i),
+                    result.getPanelScores().get(i), chosenParams.panelWeights.get(i)));
+        }
+
+        return explanations;
+    }
+
+
+    @Override
+    public List<ObjectiveSatisfaction> getPanelScoreExplanation(List<Boolean> arch, String panel, boolean useSpecial) {
+        String bitString = "";
+        for (Boolean b: arch) {
+            bitString += b ? "1" : "0";
+        }
+
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        // Evaluate the architecture
+        Result result = null;
+        // Save the explanations for each stakeholder score
+        List<ObjectiveSatisfaction> explanations = new ArrayList<>();
+        ArchitectureEvaluator chosenAE = null;
+        Params chosenParams = null;
+
+        if (useSpecial) {
+            chosenAE = specialAE;
+            chosenParams = specialParams;
+        }
+        else {
+            chosenAE = AE;
+            chosenParams = params;
+        }
+
+        result = chosenAE.evaluateArchitecture(architecture, "Slow");
+        for (int i = 0; i < chosenParams.panelNames.size(); ++i) {
+            if (chosenParams.panelNames.get(i).equals(panel)) {
+                for (int j = 0; j < chosenParams.objNames.get(i).size(); ++j) {
+                    explanations.add(new ObjectiveSatisfaction(chosenParams.objNames.get(i).get(j),
+                            result.getObjectiveScores().get(i).get(j), chosenParams.objWeights.get(i).get(j)));
+                }
             }
         }
 
         return explanations;
     }
+
+
+    @Override
+    public List<ObjectiveSatisfaction> getObjectiveScoreExplanation(List<Boolean> arch, String objective, boolean useSpecial) {
+        String bitString = "";
+        for (Boolean b: arch) {
+            bitString += b ? "1" : "0";
+        }
+
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        // Evaluate the architecture
+        Result result = null;
+        // Save the explanations for each stakeholder score
+        List<ObjectiveSatisfaction> explanations = new ArrayList<>();
+        ArchitectureEvaluator chosenAE = null;
+        Params chosenParams = null;
+
+        if (useSpecial) {
+            chosenAE = specialAE;
+            chosenParams = specialParams;
+        }
+        else {
+            chosenAE = AE;
+            chosenParams = params;
+        }
+
+        result = chosenAE.evaluateArchitecture(architecture, "Slow");
+        for (int i = 0; i < chosenParams.panelNames.size(); ++i) {
+            for (int j = 0; j < chosenParams.objNames.get(i).size(); ++j) {
+                if (chosenParams.objNames.get(i).get(j).equals(objective)) {
+                    for (int k = 0; k < chosenParams.subobjectives.get(i).get(j).size(); ++k) {
+                        explanations.add(new ObjectiveSatisfaction(chosenParams.subobjectives.get(i).get(j).get(k),
+                                result.getSubobjectiveScores().get(i).get(j).get(k),
+                                chosenParams.subobjWeights.get(i).get(j).get(k)));
+                    }
+                }
+            }
+        }
+
+        return explanations;
+    }
+
 
     @Override
     public int changeLoadedFiles(Map<String, String> params_map) throws TException {

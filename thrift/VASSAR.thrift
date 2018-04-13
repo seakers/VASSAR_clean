@@ -74,10 +74,18 @@ service VASSARInterface {
    list<string> getInstrumentList(),
 
    list<string> getObjectiveList(),
-   
+
+   list<string> getInstrumentsForObjective(1:string objective),
+
+   list<string> getInstrumentsForPanel(1:string panel),
+
    list<string> getCritique(1:list<bool> inputs, 2:bool useSpecial),
 
-   list<ObjectiveSatisfaction> getScoreExplanation(1:list<bool> arch, 2:bool useSpecial),
+   list<ObjectiveSatisfaction> getArchitectureScoreExplanation(1:list<bool> arch, 2:bool useSpecial),
+
+   list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel, 3:bool useSpecial),
+
+   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective, 3:bool useSpecial),
 
    int changeLoadedFiles(1: map<string,string> params_map)
 }
