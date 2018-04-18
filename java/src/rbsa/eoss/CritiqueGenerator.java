@@ -13,9 +13,9 @@ import rbsa.eoss.local.Params;
 public class CritiqueGenerator extends GenericTask {
     
     
-    public CritiqueGenerator (Architecture arch, Params params)
+    public CritiqueGenerator (Architecture arch)
     {
-        super(arch,"slow", params);
+        super(arch,"slow");
     }
 
     public List<String> getCritique() {

@@ -42,24 +42,8 @@ public class ArchitectureEvaluator {
 
     public void init(int numCPU) {
         params = Params.getInstance();
-        resourcePool = new ResourcePool(numCPU, params);
-        searchRes = new Resource(params);
-        executorService = Executors.newFixedThreadPool(numCPU);
-        results.clear();
-        futures.clear();
-        if (!params.runMode.equalsIgnoreCase("update_scores")) {
-            setScores(params.scores);
-            setSubobjScores(params.subobjScores);
-        }
-        if (!params.runMode.equalsIgnoreCase("update_dsms")) {
-            setDsmMap(params.allDsms);
-        }
-    }
-
-    public void init(int numCPU, Params specialParams) {
-        params = specialParams;
-        resourcePool = new ResourcePool(numCPU, params);
-        searchRes = new Resource(params);
+        resourcePool = new ResourcePool(numCPU);
+        searchRes = new Resource();
         executorService = Executors.newFixedThreadPool(numCPU);
         results.clear();
         futures.clear();
@@ -90,7 +74,7 @@ public class ArchitectureEvaluator {
 
     public void evaluatePopulation() {
         for (Architecture arch: population) {
-            GenericTask t = new GenericTask(arch, "Slow", params);
+            GenericTask t = new GenericTask(arch, "Slow");
             futures.add(executorService.submit(t));
         }
 
@@ -108,7 +92,7 @@ public class ArchitectureEvaluator {
 
     public Result evaluateArchitecture(Architecture arch, String mode) {
         if (arch.getResult().getScience() == -1) { //not yet evaluated
-            GenericTask t = new GenericTask(arch, mode, params);
+            GenericTask t = new GenericTask(arch, mode);
 
             futures.clear();
             futures.add(executorService.submit(t));

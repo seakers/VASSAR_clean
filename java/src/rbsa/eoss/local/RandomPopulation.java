@@ -20,7 +20,7 @@ public class RandomPopulation {
         ResultManager RM = ResultManager.getInstance();
         ResultCollection c = null;
 
-        ArrayList<Architecture> initialPopulation = ArchitectureGenerator.getInstance().generateBiasedRandomPopulation(POP_SIZE, 0.3);
+        ArrayList<Architecture> initialPopulation = ArchitectureGenerator.getInstance().generateBiasedRandomPopulation(POP_SIZE, 0.15);
         AE.init(8);
         AE.setPopulation(initialPopulation);
         AE.evalMinMax();

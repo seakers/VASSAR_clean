@@ -65,9 +65,7 @@ service VASSARInterface {
    
    BinaryInputArchitecture eval(1:list<bool> inputs),
 
-   BinaryInputArchitecture evalSpecial(1:list<bool> inputs),
-
-   list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs, 2:bool useSpecial),
+   list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs),
    
    list<string> getOrbitList(),
    
@@ -79,15 +77,13 @@ service VASSARInterface {
 
    list<string> getInstrumentsForPanel(1:string panel),
 
-   list<string> getCritique(1:list<bool> inputs, 2:bool useSpecial),
+   list<string> getCritique(1:list<bool> inputs),
 
-   list<ObjectiveSatisfaction> getArchitectureScoreExplanation(1:list<bool> arch, 2:bool useSpecial),
+   list<ObjectiveSatisfaction> getArchitectureScoreExplanation(1:list<bool> arch),
 
-   list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel, 3:bool useSpecial),
+   list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel),
 
-   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective, 3:bool useSpecial),
-
-   int changeLoadedFiles(1: map<string,string> params_map)
+   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective)
 }
 
 

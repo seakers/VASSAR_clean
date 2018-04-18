@@ -17,13 +17,13 @@ import java.util.*;
 import org.apache.commons.lang3.StringUtils;
 
 public class JessInitializer {
-        
+
     private static JessInitializer instance = null;
 
     private Params params;
 
     private JessInitializer() { }
-    
+
     public static JessInitializer getInstance() {
         if (instance == null) {
             instance = new JessInitializer();
@@ -31,9 +31,9 @@ public class JessInitializer {
         return instance;
     }
     
-    public void initializeJess(Rete r, QueryBuilder qb, MatlabFunctions m, Params newParams) {
+    public void initializeJess(Rete r, QueryBuilder qb, MatlabFunctions m) {
         try {
-            params = newParams;
+            params = Params.getInstance();
             // Create global variable path
             String tmp = params.path.replaceAll("\\\\", "\\\\\\\\");
             r.eval("(defglobal ?*app_path* = \"" + tmp + "\")");

@@ -21,8 +21,8 @@ public class GenericTask implements Callable {
     private String type;
     private boolean debug;
 
-    public GenericTask(Architecture arch, String type, Params params) {
-        this.params = params;
+    public GenericTask(Architecture arch, String type) {
+        this.params = Params.getInstance();
         this.arch = arch;
         this.type = type;
         debug = arch.getEvalMode().equalsIgnoreCase("DEBUG");
