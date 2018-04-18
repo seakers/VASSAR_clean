@@ -148,7 +148,7 @@ public class Params {
         this.missionAnalysisDatabaseXls = this.path + "/xls/Climate-centric/Mission Analysis Database.xls";
         this.capabilityRulesXls         = this.path + "/xls/Climate-centric/Climate-centric Instrument Capability Definition2.xls";
         this.requirementSatisfactionXls = this.path + "/xls/Climate-centric/Climate-centric Requirement Rules.xls";
-        this.aggregationXls             = this.path + "/xls/Climate-centric/Climate-centric Aggregation Rules.xls";
+        this.aggregationXls             = this.path + "/xls/Climate-centric/Climate-centric Aggregation Rules-Climate.xls";
 
         this.revtimesDatFile            = this.path + "/dat/climate-centric revtimes.dat";
         this.scoresDatFile              = this.path + "/dat/scores2014-09-14-18-13-37.dat";
