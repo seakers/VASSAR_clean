@@ -82,6 +82,7 @@ public class ArchitectureEvaluator {
             try {
                 Result resu = future.get(); // Do something with the results..
                 pushResult(resu);
+                System.out.println(resu.getScience() + " " + resu.getCost());
                 // TODO: Add a quality check to see if science < 1 and arch is not empty. Push only if it passes quality control
             }
             catch (Exception e) {

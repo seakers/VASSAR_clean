@@ -1083,7 +1083,8 @@ public class JessInitializer {
             params.panelsToInstruments = getInverseHashMap(params.instrumentsToPanels);
         }
         catch (Exception e) {
-            System.out.println("EXC in loadCapabilityRules " +e.getMessage());
+            System.out.println("EXC in loadCapabilityRules " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

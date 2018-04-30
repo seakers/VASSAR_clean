@@ -82,7 +82,7 @@ public class Params {
     public double probAccept = 0.8;
 
     // Instruments
-    public String[] instrumentList = {"ACE_ORCA","ACE_POL","ACE_LID","CLAR_ERB","ACE_CPR","DESD_SAR","DESD_LID","GACM_VIS","GACM_SWIR","HYSP_TIR","POSTEPS_IRS","CNES_KaRIN"};
+    public String[] instrumentList = {"CLOUD_MASK","SMAP_ANT","SMAP_RAD","SMAP_MWR","VIIRS","CMIS","BIOMASS"};
     public int numInstr;
     public String[] orbitList = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-DD","SSO-800-SSO-PM"};
     public int numOrbits;
@@ -146,11 +146,11 @@ public class Params {
         // Paths for common xls files
         this.templateDefinitionXls      = this.path + "/xls/Climate-centric/Climate-centric AttributeSet.xls";
         this.missionAnalysisDatabaseXls = this.path + "/xls/Climate-centric/Mission Analysis Database.xls";
-        this.capabilityRulesXls         = this.path + "/xls/Climate-centric/Climate-centric Instrument Capability Definition2.xls";
-        this.requirementSatisfactionXls = this.path + "/xls/Climate-centric/Climate-centric Requirement Rules.xls";
-        this.aggregationXls             = this.path + "/xls/Climate-centric/Climate-centric Aggregation Rules.xls";
+        this.capabilityRulesXls         = this.path + "/xls/SMAP/SMAP Instrument Capability Definition.xls";
+        this.requirementSatisfactionXls = this.path + "/xls/SMAP/SMAP Requirement Rules.xls";
+        this.aggregationXls             = this.path + "/xls/SMAP/SMAP Aggregation Rules.xls";
 
-        this.revtimesDatFile            = this.path + "/dat/climate-centric revtimes.dat";
+        this.revtimesDatFile            = this.path + "/dat/revtimes.dat";
         this.scoresDatFile              = this.path + "/dat/scores2014-09-14-18-13-37.dat";
         this.dsmDatFile                 = this.path + "/dat/all_dsms2014-09-14-18-56-03.dat";
 
