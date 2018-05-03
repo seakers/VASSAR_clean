@@ -15,7 +15,7 @@ public class RandomPopulation {
 
         int POP_SIZE = 500;
 
-        Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal","search_heuristic_rules_smap_127");
+        Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
         ArchitectureEvaluator AE = ArchitectureEvaluator.getInstance();
         ResultManager RM = ResultManager.getInstance();
         ResultCollection c = null;

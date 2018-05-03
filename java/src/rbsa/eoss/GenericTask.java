@@ -151,12 +151,13 @@ public class GenericTask implements Callable {
                         fovs = new_fovs;
                     }
 
-                    String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
+                    //String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
+                    String key = m.stringArraytoStringWith(fovs, "  ");
 
-                    HashMap<String, Double> therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
+                    Double therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
                     String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
-                            + "(avg-revisit-time-global# " + therevtimes.get("Global") + ") "
-                            + "(avg-revisit-time-US# " + therevtimes.get("US") + ")"
+                            + "(avg-revisit-time-global# " + therevtimes + ") "
+                            + "(avg-revisit-time-US# " + therevtimes + ")"
                             + "(factHistory J" + javaAssertedFactID + ")))";
                     javaAssertedFactID++;
                     r.eval(call);

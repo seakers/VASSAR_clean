@@ -82,9 +82,9 @@ public class Params {
     public double probAccept = 0.8;
 
     // Instruments
-    public String[] instrumentList = {"CLOUD_MASK","SMAP_ANT","SMAP_RAD","SMAP_MWR","VIIRS","CMIS","BIOMASS"};
+    public String[] instrumentList = {"BIOMASS","SMAP_RAD","SMAP_MWR","CMIS","VIIRS"};
     public int numInstr;
-    public String[] orbitList = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-DD","SSO-800-SSO-PM"};
+    public String[] orbitList = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-AM","SSO-800-SSO-DD"};
     public int numOrbits;
     public HashMap<String, Integer> instrumentIndexes = new HashMap<>();
     public HashMap<String, Integer> orbitIndexes = new HashMap<>();
@@ -128,7 +128,8 @@ public class Params {
     public HashMap<String, String> subobjDescriptions;
     public HashMap<String, Double> subobjWeightsMap;
 
-    public HashMap<String, HashMap<String, Double>> revtimes;
+    //public HashMap<String, HashMap<String, Double>> revtimes;
+    public HashMap<String, Double> revtimes;
     public HashMap<ArrayList<String>, HashMap<String, Double>> scores;
     public HashMap<ArrayList<String>, HashMap<String, ArrayList<ArrayList<ArrayList<Double>>>>> subobjScores;
     public HashMap<String, NDSM> allDsms;
@@ -144,15 +145,15 @@ public class Params {
         this.pathSaveResults = this.path + "/results";
 
         // Paths for common xls files
-        this.templateDefinitionXls      = this.path + "/xls/Climate-centric/Climate-centric AttributeSet.xls";
-        this.missionAnalysisDatabaseXls = this.path + "/xls/Climate-centric/Mission Analysis Database.xls";
+        this.templateDefinitionXls      = this.path + "/xls/SMAP/AttributeSet.xls";
+        this.missionAnalysisDatabaseXls = this.path + "/xls/SMAP/Mission Analysis Database.xls";
         this.capabilityRulesXls         = this.path + "/xls/SMAP/SMAP Instrument Capability Definition.xls";
         this.requirementSatisfactionXls = this.path + "/xls/SMAP/SMAP Requirement Rules.xls";
         this.aggregationXls             = this.path + "/xls/SMAP/SMAP Aggregation Rules.xls";
 
-        this.revtimesDatFile            = this.path + "/dat/revtimes.dat";
-        this.scoresDatFile              = this.path + "/dat/scores2014-09-14-18-13-37.dat";
-        this.dsmDatFile                 = this.path + "/dat/all_dsms2014-09-14-18-56-03.dat";
+        this.revtimesDatFile            = this.path + "/dat/SMAP/revtimes";
+        this.scoresDatFile              = this.path + "/dat/SMAP/scores2013-10-29-15-31-49.dat";
+        this.dsmDatFile                 = this.path + "/dat/SMAP/all_dsms2013-10-29-15-35-13.dat";
 
         // Paths for common clp files
         this.moduleDefinitionClp            = this.path + "/clp/modules.clp";
@@ -172,7 +173,7 @@ public class Params {
         this.capabilityRulesClp             = this.path + "/clp/capability_rules.clp";
         this.synergyRulesClp                = this.path + "/clp/synergy_rules.clp";
         this.assimilationRulesClp           = this.path + "/clp/assimilation_rules.clp";
-        this.adhocRulesClp                  = this.path + "/clp/climate_centric_rules.clp";
+        this.adhocRulesClp                  = this.path + "/clp/smap_rules_test.clp";
         this.downSelectionRulesClp          = this.path + "/clp/down_selection_rules_smap.clp";
         if (search_clp.isEmpty()) {
             this.searchHeuristicRulesClp    = this.path + "/clp/search_heuristic_rules_smap_improveOrbit.clp";
@@ -228,7 +229,8 @@ public class Params {
             if (!this.runMode.equalsIgnoreCase("update_revtimes")) {
                 FileInputStream fis = new FileInputStream(revtimesDatFile);
                 ObjectInputStream ois = new ObjectInputStream(fis);
-                this.revtimes = (HashMap<String, HashMap<String, Double>>) ois.readObject();
+                //this.revtimes = (HashMap<String, HashMap<String, Double>>) ois.readObject();
+                this.revtimes = (HashMap<String, Double>) ois.readObject();
                 ois.close();
             }
             if (!this.runMode.equalsIgnoreCase("update_scores")) {

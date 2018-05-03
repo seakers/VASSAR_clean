@@ -45,6 +45,8 @@ public class JessInitializer {
             params.nof = 1;
             params.nor = 1;
 
+            Locale.setDefault(Locale.ENGLISH);
+
             // Load modules
             loadModules(r);
 
@@ -77,14 +79,14 @@ public class JessInitializer {
                 ValueVector payload_MEO = lv.getSlotValue("payload-MEO").listValue(r.getGlobalContext());
                 ValueVector payload_GEO = lv.getSlotValue("payload-GEO").listValue(r.getGlobalContext());
                 ValueVector payload_HEO = lv.getSlotValue("payload-HEO").listValue(r.getGlobalContext());
-                ValueVector payload_ISS = lv.getSlotValue("payload-ISS").listValue(r.getGlobalContext());
+//                ValueVector payload_ISS = lv.getSlotValue("payload-ISS").listValue(r.getGlobalContext());
                 payload_coeffs.put("LEO-polar", payload_LEO_polar);
                 payload_coeffs.put("SSO-SSO", payload_SSO);
                 payload_coeffs.put("LEO-equat", payload_LEO_equat);
                 payload_coeffs.put("MEO-polar", payload_MEO);
                 payload_coeffs.put("GEO-equat", payload_GEO);
                 payload_coeffs.put("HEO-polar", payload_HEO);
-                payload_coeffs.put("LEO-ISS", payload_ISS);
+//                payload_coeffs.put("LEO-ISS", payload_ISS);
                 LaunchVehicle lvh = new LaunchVehicle(id, payload_coeffs, diam, height, cost);
                 m.addLaunchVehicletoDB(id, lvh);
             }
@@ -1041,7 +1043,7 @@ public class JessInitializer {
                     call2 += "(taken-by " + instrument +  ") (flies-in ?miss) (orbit-altitude# ?h) (orbit-RAAN ?raan) (orbit-anomaly# ?ano) (Id " + instrument + i + ") (Instrument " + instrument + ")"
                             + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ ruleName +") \" A\" (call ?this getFactId) \" A\" (call ?this2 getFactId) \"}\"))"
                             + ")) ";
-                    listOfMeasurements = listOfMeasurements + " " + instrument + i + " ";
+                    listOfMeasurements += " " + instrument + i + " ";
                 }
                 call2 += "(assert (SYNERGIES::cross-registered (measurements " + listOfMeasurements + " ) (degree-of-cross-registration instrument) (platform ?id  )"
                         + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ ruleName +") \" A\" (call ?this getFactId) \" A\" (call ?this2 getFactId) \"}\"))"
