@@ -20,15 +20,10 @@ package server;
  */
 
 
-import java.io.File;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.*;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.sync.RedisCommands;
-import org.apache.thrift.TException;
+import io.lettuce.core.RedisClient;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
