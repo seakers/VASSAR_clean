@@ -1,6 +1,6 @@
 package rbsa.eoss.local;
 
-import com.lambdaworks.redis.RedisClient;
+import io.lettuce.core.RedisClient;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -14,10 +14,6 @@ import org.moeaframework.util.TypedProperties;
 import rbsa.eoss.*;
 import seak.architecture.operators.IntegerUM;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
