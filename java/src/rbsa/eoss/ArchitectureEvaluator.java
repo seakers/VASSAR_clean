@@ -94,11 +94,10 @@ public class ArchitectureEvaluator {
         if (arch.getResult().getScience() == -1) { //not yet evaluated
             GenericTask t = new GenericTask(arch, mode);
 
-            futures.clear();
-            futures.add(executorService.submit(t));
+            Future<Result> future = (Future<Result>) executorService.submit(t);
             Result result = null;
             try {
-                result = futures.get(0).get();
+                result = future.get();
             }
             catch (Exception e) {
                 System.out.println(e.getClass() + " : " + e.getMessage());
