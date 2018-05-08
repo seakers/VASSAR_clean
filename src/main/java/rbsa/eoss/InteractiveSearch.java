@@ -8,21 +8,18 @@ package rbsa.eoss;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.api.StatefulRedisConnection;
-import com.lambdaworks.redis.api.sync.RedisCommands;
-import com.lambdaworks.redis.pubsub.StatefulRedisPubSubConnection;
-import com.lambdaworks.redis.pubsub.api.sync.RedisPubSubCommands;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.StatefulRedisConnection;
+import io.lettuce.core.api.sync.RedisCommands;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import org.moeaframework.algorithm.AbstractEvolutionaryAlgorithm;
 import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.TypedProperties;
-import seak.architecture.io.ResultIO;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.concurrent.Callable;
 
 /**
