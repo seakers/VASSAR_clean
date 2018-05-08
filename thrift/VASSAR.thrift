@@ -83,7 +83,9 @@ service VASSARInterface {
 
    list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel),
 
-   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective)
+   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective),
+
+   oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username)
 }
 
 
