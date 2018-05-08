@@ -3,8 +3,6 @@ package rbsa.eoss;
 import jess.*;
 import rbsa.eoss.local.Params;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.ArrayList;
 import java.util.TreeMap;
