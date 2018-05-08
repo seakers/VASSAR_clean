@@ -12,7 +12,7 @@ public class EvaluationTest {
         //PATH
         String path = ".";
 
-        Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal","search_heuristic_rules_smap_127");
+        Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
         ArchitectureEvaluator AE = ArchitectureEvaluator.getInstance();
 
         Architecture testArch;

@@ -1,7 +1,10 @@
 <component name="libraryTable">
   <library name="combinatoricslib-2.0">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/java/combinatoricslib-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/main/resources/combinatoricslib-2.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/main/resources/jess.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/main/resources/orekit.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/main/resources/SystemArchitectureProblems.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
