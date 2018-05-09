@@ -59,16 +59,19 @@ public class InstrumentAssignment extends AbstractProblem implements SystemArchi
     }
 
     private void evaluateArch(InstrumentAssignmentArchitecture arch) {
-        String bitString = "";
-        for(int i = 1; i < this.getNumberOfVariables(); ++i) {
-            bitString += arch.getVariable(i).toString();
-        }
-        Architecture arch_old = new Architecture(bitString, 1);
-        Result result = eval.evaluateArchitecture(arch_old, "Slow");
-        arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
+        if (!arch.getAlreadyEvaluated()) {
+            String bitString = "";
+            for(int i = 1; i < this.getNumberOfVariables(); ++i) {
+                bitString += arch.getVariable(i).toString();
+            }
+            Architecture arch_old = new Architecture(bitString, 1);
+            Result result = eval.evaluateArchitecture(arch_old, "Slow");
+            arch.setObjective(0, -result.getScience()); //negative because MOEAFramework assumes minimization problems
 
-        double cost = result.getCost();
-        arch.setObjective(1, cost); //normalize cost to maximum value
+            double cost = result.getCost();
+            arch.setObjective(1, cost); //normalize cost to maximum value
+            arch.setAlreadyEvaluated(true);
+        }
     }
 
     @Override

@@ -61,9 +61,10 @@ public class InteractiveSearch implements Callable<Algorithm> {
                 s.setAttribute("NFE", alg.getNumberOfEvaluations());
                 // Send the new architectures through REDIS
                 Gson gson = new GsonBuilder().create();
-                syncCommands.rpush(this.username, gson.toJson(s));
+                Long retval = syncCommands.rpush(this.username, gson.toJson(s));
+                System.out.println(retval);
             }
-            syncCommands.ltrim(this.username, -1, -1000);
+            syncCommands.ltrim(this.username, -1000, -1);
             connection.close();
             // Notify listeners of new architectures in username channel
             StatefulRedisPubSubConnection<String, String> pubsubConnection = redisClient.connectPubSub();
