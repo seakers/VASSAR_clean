@@ -51,7 +51,7 @@ public class CoverageAnalysis {
 
     private int numThreads;
     private int coverageGridGranularity;
-    private String cwd;
+    private String cwd;//current working directory
     private Properties propertiesPropagator;
     private CoverageDefinition.GridStyle gridStyle;
     private FieldOfViewEventAnalysis fovEventAnalysis;
@@ -223,13 +223,13 @@ public class CoverageAnalysis {
 
         }else{
             stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, latBounds, lonBounds, this.propertiesPropagator);
-
         }
 
         double mean = stat.getMean();
 
-        System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
+        //System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
 
+        
         return mean;
     }
 }

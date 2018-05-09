@@ -35,7 +35,20 @@
             </plugin>
         </plugins>
     </build>
+    
+    <repositories>
+    <repository>
+       <id>lib</id>
+       <url>file://${project.basedir}/lib</url>
+    </repository>
+    </repositories>
+    
     <dependencies>
+        <dependency>
+        <groupId>seak</groupId>
+        <artifactId>orekit</artifactId>
+        <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>com.googlecode.combinatoricslib</groupId>
             <artifactId>combinatoricslib</artifactId>
@@ -51,37 +64,20 @@
             <artifactId>hipparchus-stat</artifactId>
             <version>1.0</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>seak</groupId>-->
-            <!--<artifactId>orekit</artifactId>-->
-            <!--<version>1.0-SNAPSHOT</version>-->
-            <!--<type>jar</type>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>seak</groupId>
-            <artifactId>orekit</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/orekit.jar</systemPath>
-        </dependency>
         <dependency>
             <groupId>org.orekit</groupId>
             <artifactId>orekit</artifactId>
             <version>8.0</version>
         </dependency>
         <dependency>
-            <groupId>jess</groupId>
-            <artifactId>jess</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/jess.jar</systemPath>
-	    </dependency>
+        <groupId>seak</groupId>
+        <artifactId>architecture</artifactId>
+        <version>1.0</version>
+        </dependency>
         <dependency>
-            <groupId>seak</groupId>
-            <artifactId>architecture</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/SystemArchitectureProblems.jar</systemPath>
+        <groupId>jess</groupId>
+        <artifactId>jess</artifactId>
+        <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.jexcelapi</groupId>
