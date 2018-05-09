@@ -1,10 +1,13 @@
 package rbsa.eoss;
 
+import java.util.Objects;
+
 /**
  *
  * @author Ana-Dani
  */
 public class Orbit {
+
     private String type;
     private String altitude;
     private String inclination;
@@ -157,5 +160,15 @@ public class Orbit {
     public void setNum_sats_per_plane(String num_sats_per_plane) {
         this.num_sats_per_plane = num_sats_per_plane;
     }
-    
+
+    @Override
+    public int hashCode(){
+        int hash = 17;
+        hash = 31 * hash + Objects.hashCode(this.altitude);
+        hash = 31 * hash + Objects.hashCode(this.inclination);
+        hash = 31 * hash + Objects.hashCode(this.eccentricity);
+        hash = 31 * hash + Objects.hashCode(this.nplanes);
+        hash = 31 * hash + Objects.hashCode(this.num_sats_per_plane);
+        return hash;
+    }
 }

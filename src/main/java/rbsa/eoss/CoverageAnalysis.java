@@ -201,25 +201,34 @@ public class CoverageAnalysis {
         return fovEvents;
     }
 
-    public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+
+    public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double[] latBounds, double[] lonBounds) throws OrekitException{
         Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
-        return this.getRevisitTime(fovEvents);
+        return this.getRevisitTime(fovEvents, latBounds, lonBounds);
     }
 
     public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents){
-        // Method to compute average revisit time from accesses
+        return getRevisitTime(fovEvents,  new double[0], new double[0]);
+    }
 
-        //Define the metrics array
-        //ArrayList<Double> averageRevisitTime = new ArrayList<>();
+    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents, double[] latBounds, double[] lonBounds){
+        // Method to compute average revisit time from accesses
 
         GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvents);
 
-        DescriptiveStatistics stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, this.propertiesPropagator);
+        DescriptiveStatistics stat;
+
+        if(latBounds.length == 0 && lonBounds.length == 0){
+            stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, this.propertiesPropagator);
+
+        }else{
+            stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, latBounds, lonBounds, this.propertiesPropagator);
+
+        }
 
         double mean = stat.getMean();
 
         System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
-        //averageRevisitTime.add(stat.getMean());
 
         return mean;
     }
