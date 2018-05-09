@@ -27,7 +27,7 @@ public class Params {
     public static Params getInstance() {
         return instance;
     }
-    
+
     public String path;
     public String reqMode;
     public String name;
@@ -194,8 +194,10 @@ public class Params {
 
         // Instruments & Orbits
         numInstr = instrumentList.length;
-        MAX_TOTAL_INSTR = 5*numInstr;
         numOrbits = orbitList.length;
+
+        MAX_TOTAL_INSTR = numOrbits * numInstr;
+
         for (int i = 0; i < numInstr; i++) {
             instrumentIndexes.put(instrumentList[i], i);
         }

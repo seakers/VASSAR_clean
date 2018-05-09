@@ -47,18 +47,18 @@ import seak.orekit.object.fieldofview.NadirSimpleConicalFOV;
  * @author Prachi
  */
 public class CoverageAnalysis {
-    
-    /**
-     *inputs - num of sat per plane, num planes, fov, 
-     */
-    public CoverageAnalysis(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
-        
+
+    private int numThreads;
+    private int coverageGridGranularity;
+
+    public CoverageAnalysis(int numThreads, int overageGridGranularity){
+
+        this.numThreads = numThreads;
+        this.coverageGridGranularity = coverageGridGranularity;
+
         //if running on a non-US machine, need the line below
         Locale.setDefault(new Locale("en", "US"));
-        long start = System.nanoTime();
 
-        OrekitConfig.init(4);
-        
         //setup logger
         Level level = Level.ALL;
         Logger.getGlobal().setLevel(level);
@@ -66,6 +66,22 @@ public class CoverageAnalysis {
         handler.setLevel(level);
         Logger.getGlobal().addHandler(handler);
 
+    }
+
+    /**
+     * Computes the accesses for satellites sharing the same field of view
+     * @param fieldOfView
+     * @param inclination
+     * @param altitude
+     * @param numSats
+     * @param numPlanes
+     * @throws OrekitException
+     */
+    public void getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+
+        long start = System.nanoTime();
+
+        OrekitConfig.init(this.numThreads);
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate startDate = new AbsoluteDate(2020, 1, 1, 00, 00, 00.000, utc);
         AbsoluteDate endDate = new AbsoluteDate(2020, 1, 8, 00, 00, 00.000, utc); //7 days run time
@@ -82,44 +98,44 @@ public class CoverageAnalysis {
         double h = altitude; //altitude
         double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS+h; //semi-major axis
         double i = FastMath.toRadians(inclination);
-        
+
         //define instruments and payload
         NadirSimpleConicalFOV fov = new NadirSimpleConicalFOV(FastMath.toRadians(fieldOfView), earthShape);
         ArrayList<Instrument> payload = new ArrayList<>();
         Instrument view1 = new Instrument("view1", fov, 100, 100);
         payload.add(view1);
-        
+
         //number of total satellites
         int t = numSats;
-        
+
         //number of planes
         int p = numPlanes;
-        
+
         //number of phases
         int f = 0;
-        
+
         //Define the metrics array
         ArrayList<Double> averageRevisitTime = new ArrayList<>();
-    
+
         Walker walker = new Walker("walker1", payload, a, i, t, p, f, inertialFrame, startDate, mu);
 
         //define coverage params
         //this is coverage with 20 granularity and equal area grid style
         CoverageDefinition coverageDefinition = new CoverageDefinition("covdef", 20, earthShape, EQUAL_AREA);
         coverageDefinition.assignConstellation(walker);
-        
+
         //define where to save the coverage - in a map
         HashSet<CoverageDefinition> coverageDefinitionMap = new HashSet<>();
         coverageDefinitionMap.add(coverageDefinition);
-        
+
         //can set the properties/number of resources available
         //to the satellite but we don't need them right now
-        //so we are just instantiating it 
+        //so we are just instantiating it
         Properties propertiesPropagator = new Properties();
 
         //propagator type
         PropagatorFactory propFactory = new PropagatorFactory(PropagatorType.J2,propertiesPropagator);
-        
+
         //set the event analyses
         EventAnalysisFactory eventAnalysisFactory = new EventAnalysisFactory(startDate, endDate, inertialFrame, propFactory);
         ArrayList<EventAnalysis> eventanalyses = new ArrayList<>();
@@ -128,11 +144,12 @@ public class CoverageAnalysis {
 
         //set the analyses
         ArrayList<Analysis> analyses = new ArrayList<>();
-        
+
         Scenario scene = new Scenario.Builder(startDate, endDate, utc).
                 eventAnalysis(eventanalyses).analysis(analyses).
                 covDefs(coverageDefinitionMap).name("SMAP").properties(propertiesPropagator).
                 propagatorFactory(propFactory).build();
+
         try {
             Logger.getGlobal().finer(String.format("Running Scenario %s", scene));
             Logger.getGlobal().finer(String.format("Number of points:     %d", coverageDefinition.getNumberOfPoints()));
@@ -144,17 +161,22 @@ public class CoverageAnalysis {
         }
 
         Logger.getGlobal().finer(String.format("Done Running Scenario %s", scene));
-        
+
         GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvent.getEvents(coverageDefinition));
         DescriptiveStatistics stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, propertiesPropagator);
         System.out.println(String.format("Max access time %s", stat.getMean()));
         averageRevisitTime.add(stat.getMean());
-        
+
         //output the time
         long end = System.nanoTime();
         Logger.getGlobal().finest(String.format("Took %.4f sec", (end - start) / Math.pow(10, 9)));
-        
+
         OrekitConfig.end();
     }
+
+    public void getRevisitTime(){
+        // Method to compute average revisit time from accesses
+    }
+
     
 }
