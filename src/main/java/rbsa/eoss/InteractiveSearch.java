@@ -17,9 +17,12 @@ import org.moeaframework.algorithm.AbstractEvolutionaryAlgorithm;
 import org.moeaframework.core.Algorithm;
 import org.moeaframework.core.Population;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.util.TypedProperties;
+import rbsa.eoss.javaInterface.BinaryInputArchitecture;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 /**
@@ -41,7 +44,7 @@ public class InteractiveSearch implements Callable<Algorithm> {
     }
 
     @Override
-    public Algorithm call() throws IOException  {
+    public Algorithm call() {
 
         int populationSize = (int) properties.getDouble("populationSize", 600);
         int maxEvaluations = (int) properties.getDouble("maxEvaluations", 10000);
@@ -60,9 +63,19 @@ public class InteractiveSearch implements Callable<Algorithm> {
                 Solution s = pop.get(pop.size() - i);
                 s.setAttribute("NFE", alg.getNumberOfEvaluations());
                 // Send the new architectures through REDIS
+                // But first, turn it into something easier in JSON
+                BinaryInputArchitecture json_arch = new BinaryInputArchitecture();
+                json_arch.inputs = new ArrayList<>();
+                json_arch.outputs = new ArrayList<>();
+                for (int j = 1; j < s.getNumberOfVariables(); ++j) {
+                    BinaryVariable var = (BinaryVariable)s.getVariable(j);
+                    boolean binaryVal = var.get(0);
+                    json_arch.inputs.add(binaryVal);
+                }
+                json_arch.outputs.add(-s.getObjective(0));
+                json_arch.outputs.add(s.getObjective(1));
                 Gson gson = new GsonBuilder().create();
-                Long retval = syncCommands.rpush(this.username, gson.toJson(s));
-                System.out.println(retval);
+                Long retval = syncCommands.rpush(this.username, gson.toJson(json_arch));
             }
             syncCommands.ltrim(this.username, -1000, -1);
             connection.close();

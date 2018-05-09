@@ -24,6 +24,8 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
+import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -372,6 +374,12 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         } catch (InterruptedException | ExecutionException ex) {
             ex.printStackTrace();
         }
+
+        // Notify listeners of new architectures in username channel
+        StatefulRedisPubSubConnection<String, String> pubsubConnection = redisClient.connectPubSub();
+        RedisPubSubCommands<String, String> sync = pubsubConnection.sync();
+        sync.publish(username, "ga_done");
+        pubsubConnection.close();
 
         redisClient.shutdown();
         ArchitectureEvaluator.getInstance().clear();
