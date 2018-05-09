@@ -19,8 +19,9 @@ jar {
 }
 
 dependencies {
+    compile group: 'org.orekit', name: 'orekit', version: '8.0.1'
     compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
-    compile 'org.apache.commons:commons-lang3:3.1'
+    compile 'org.apache.commons:commons-lang3:3.7'
     compile 'org.hipparchus:hipparchus-stat:1.0'
     compile files('lib/orekit.jar')
     compile files('lib/jess.jar')

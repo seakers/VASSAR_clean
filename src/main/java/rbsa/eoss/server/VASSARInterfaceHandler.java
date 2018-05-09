@@ -58,7 +58,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         
         // Initialization
         String search_clps = "";
-        params = Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
+        params = Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
         AE = ArchitectureEvaluator.getInstance();
         AE.init(1);
     }
@@ -301,7 +301,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         //PATH
         String path = ".";
 
-        ExecutorService pool = Executors.newFixedThreadPool(8);
+        ExecutorService pool = Executors.newFixedThreadPool(1);
         CompletionService<Algorithm> ecs = new ExecutorCompletionService<>(pool);
 
         //parameters and operators for search

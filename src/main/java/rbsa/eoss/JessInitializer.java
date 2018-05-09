@@ -710,7 +710,7 @@ public class JessInitializer {
                         String[] tokens = currentSubobj.split("-",2);// limit = 2 so that remain contains RegionofInterest Global
                         String parent = tokens[0];
                         String index = tokens[1];
-                        call2 += " (AGGREGATION::SUBOBJECTIVE (satisfaction 0.0) (id " + currentSubobj + ") (index " + index + ") (parent " + parent + ") (reasons (create$ " + StringUtils.repeat("N-A ",numAttrib) + " ))"
+                        call2 += " (AGGREGATION::SUBOBJECTIVE (satisfaction 0.0) (id " + currentSubobj + ") (index " + index + ") (parent " + parent + ") (reasons (create$ " + StringUtils.repeat("N-A ", numAttrib) + " ))"
                                 + "(factHistory F" + params.nof + ")) ";
                         params.nof++;
                         String rhs0 = ") => (bind ?reason \"\") (bind ?new-reasons (create$ "  + StringUtils.repeat("N-A ",numAttrib) + "))";
@@ -827,6 +827,7 @@ public class JessInitializer {
             params.measurementsToPanels = getInverseHashMapStringArrayList(params.panelsToMeasurements);
         }
         catch (Exception e) {
+            e.printStackTrace();
             System.out.println("EXC in loadRequirementRulesAttribs " + e.getMessage());
         }
     }
