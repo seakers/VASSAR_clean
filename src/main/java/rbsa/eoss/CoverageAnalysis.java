@@ -5,16 +5,15 @@
  */
 package rbsa.eoss;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
+import org.orekit.frames.TopocentricFrame;
 import seak.orekit.analysis.Analysis;
 import seak.orekit.constellations.Walker;
+import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.object.CoverageDefinition;
 import seak.orekit.object.Instrument;
 import seak.orekit.propagation.PropagatorFactory;
@@ -41,6 +40,8 @@ import seak.orekit.event.FieldOfViewEventAnalysis;
 import static seak.orekit.object.CoverageDefinition.GridStyle.EQUAL_AREA;
 import seak.orekit.object.fieldofview.NadirSimpleConicalFOV;
 
+import java.io.File;
+import org.orekit.data.DataProvidersManager;
 
 /**
  *
@@ -50,14 +51,17 @@ public class CoverageAnalysis {
 
     private int numThreads;
     private int coverageGridGranularity;
+    private String cwd;
+    private Properties propertiesPropagator;
+    private CoverageDefinition.GridStyle gridStyle;
+    private FieldOfViewEventAnalysis fovEventAnalysis;
 
-    public CoverageAnalysis(int numThreads, int overageGridGranularity){
+    public CoverageAnalysis(int numThreads, int coverageGridGranularity){
 
         this.numThreads = numThreads;
         this.coverageGridGranularity = coverageGridGranularity;
-
-        //if running on a non-US machine, need the line below
-        Locale.setDefault(new Locale("en", "US"));
+        this.gridStyle = EQUAL_AREA;
+        this.cwd = System.getProperty("user.dir");
 
         //setup logger
         Level level = Level.ALL;
@@ -66,7 +70,23 @@ public class CoverageAnalysis {
         handler.setLevel(level);
         Logger.getGlobal().addHandler(handler);
 
+        reset();
     }
+
+    public void reset(){
+
+        //can set the properties/number of resources available
+        //to the satellite but we don't need them right now
+        //so we are just instantiating it
+        this.propertiesPropagator = new Properties();
+
+//        FieldOfViewEventAnalysis fovEventAnal = (FieldOfViewEventAnalysis) eventAnalysisFactory.createGroundPointAnalysis(EventAnalysisEnum.FOV, coverageDefinitionMap, propertiesPropagator);
+//        eventanalyses.add(fovEventAnal);
+
+        // Reset the FieldOfViewEventAnalysis
+        this.fovEventAnalysis = null;
+    }
+
 
     /**
      * Computes the accesses for satellites sharing the same field of view
@@ -77,11 +97,28 @@ public class CoverageAnalysis {
      * @param numPlanes
      * @throws OrekitException
      */
-    public void getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
 
         long start = System.nanoTime();
 
         OrekitConfig.init(this.numThreads);
+
+        // Reset the properties setting
+        this.propertiesPropagator = new Properties();
+
+        //if running on a non-US machine, need the line below
+        Locale.setDefault(new Locale("en", "US"));
+
+        // Load default dataset saved in the project root directory
+        StringBuffer pathBuffer = new StringBuffer();
+        final File currrentDir = new File(this.cwd);
+        if (currrentDir.exists() && (currrentDir.isDirectory() || currrentDir.getName().endsWith(".zip"))) {
+            pathBuffer.append(currrentDir.getAbsolutePath());
+            pathBuffer.append(File.separator);
+            pathBuffer.append("orekit-data");
+        }
+        System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, pathBuffer.toString());
+
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate startDate = new AbsoluteDate(2020, 1, 1, 00, 00, 00.000, utc);
         AbsoluteDate endDate = new AbsoluteDate(2020, 1, 8, 00, 00, 00.000, utc); //7 days run time
@@ -114,24 +151,16 @@ public class CoverageAnalysis {
         //number of phases
         int f = 0;
 
-        //Define the metrics array
-        ArrayList<Double> averageRevisitTime = new ArrayList<>();
-
         Walker walker = new Walker("walker1", payload, a, i, t, p, f, inertialFrame, startDate, mu);
 
         //define coverage params
         //this is coverage with 20 granularity and equal area grid style
-        CoverageDefinition coverageDefinition = new CoverageDefinition("covdef", 20, earthShape, EQUAL_AREA);
+        CoverageDefinition coverageDefinition = new CoverageDefinition("covdef", this.coverageGridGranularity, earthShape, this.gridStyle);
         coverageDefinition.assignConstellation(walker);
 
         //define where to save the coverage - in a map
         HashSet<CoverageDefinition> coverageDefinitionMap = new HashSet<>();
         coverageDefinitionMap.add(coverageDefinition);
-
-        //can set the properties/number of resources available
-        //to the satellite but we don't need them right now
-        //so we are just instantiating it
-        Properties propertiesPropagator = new Properties();
 
         //propagator type
         PropagatorFactory propFactory = new PropagatorFactory(PropagatorType.J2,propertiesPropagator);
@@ -139,8 +168,8 @@ public class CoverageAnalysis {
         //set the event analyses
         EventAnalysisFactory eventAnalysisFactory = new EventAnalysisFactory(startDate, endDate, inertialFrame, propFactory);
         ArrayList<EventAnalysis> eventanalyses = new ArrayList<>();
-        FieldOfViewEventAnalysis fovEvent = (FieldOfViewEventAnalysis) eventAnalysisFactory.createGroundPointAnalysis(EventAnalysisEnum.FOV, coverageDefinitionMap, propertiesPropagator);
-        eventanalyses.add(fovEvent);
+        FieldOfViewEventAnalysis fovEventAnalysis = (FieldOfViewEventAnalysis) eventAnalysisFactory.createGroundPointAnalysis(EventAnalysisEnum.FOV, coverageDefinitionMap, propertiesPropagator);
+        eventanalyses.add(fovEventAnalysis);
 
         //set the analyses
         ArrayList<Analysis> analyses = new ArrayList<>();
@@ -162,21 +191,36 @@ public class CoverageAnalysis {
 
         Logger.getGlobal().finer(String.format("Done Running Scenario %s", scene));
 
-        GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvent.getEvents(coverageDefinition));
-        DescriptiveStatistics stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, propertiesPropagator);
-        System.out.println(String.format("Max access time %s", stat.getMean()));
-        averageRevisitTime.add(stat.getMean());
+        Map<TopocentricFrame, TimeIntervalArray> fovEvents = fovEventAnalysis.getEvents(coverageDefinition);
 
         //output the time
         long end = System.nanoTime();
         Logger.getGlobal().finest(String.format("Took %.4f sec", (end - start) / Math.pow(10, 9)));
-
         OrekitConfig.end();
+
+        return fovEvents;
     }
 
-    public void getRevisitTime(){
+    public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+        Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+        return this.getRevisitTime(fovEvents);
+    }
+
+    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents){
         // Method to compute average revisit time from accesses
-    }
 
-    
+        //Define the metrics array
+        //ArrayList<Double> averageRevisitTime = new ArrayList<>();
+
+        GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvents);
+
+        DescriptiveStatistics stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, this.propertiesPropagator);
+
+        double mean = stat.getMean();
+
+        System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
+        //averageRevisitTime.add(stat.getMean());
+
+        return mean;
+    }
 }

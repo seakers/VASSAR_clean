@@ -65,6 +65,11 @@
             <systemPath>${project.basedir}/lib/orekit.jar</systemPath>
         </dependency>
         <dependency>
+            <groupId>org.orekit</groupId>
+            <artifactId>orekit</artifactId>
+            <version>8.0</version>
+        </dependency>
+        <dependency>
             <groupId>jess</groupId>
             <artifactId>jess</artifactId>
             <version>1.0</version>
