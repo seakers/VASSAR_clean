@@ -39,6 +39,8 @@ public class InstrumentAssignmentArchitecture extends Architecture {
      */
     private final int[] alternativesForNumberOfSatellites;
 
+    private boolean alreadyEvaluated;
+
     //Constructors
     /**
      * Creates an empty architecture with a default number of satellites.
@@ -55,6 +57,7 @@ public class InstrumentAssignmentArchitecture extends Architecture {
         super(numberOfObjectives, 0,
                 createDecisions(alternativesForNumberOfSatellites, numberOfInstruments, numberOfOrbits));
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
+        this.alreadyEvaluated = false;
     }
 
     private static ArrayList<ArchitecturalDecision> createDecisions(
@@ -74,6 +77,14 @@ public class InstrumentAssignmentArchitecture extends Architecture {
     private InstrumentAssignmentArchitecture(Solution solution) {
         super(solution);
         this.alternativesForNumberOfSatellites = ((InstrumentAssignmentArchitecture) solution).alternativesForNumberOfSatellites;
+    }
+
+    public void setAlreadyEvaluated(boolean alreadyEvaluated) {
+        this.alreadyEvaluated = alreadyEvaluated;
+    }
+
+    public boolean getAlreadyEvaluated() {
+        return this.alreadyEvaluated;
     }
 
     @Override

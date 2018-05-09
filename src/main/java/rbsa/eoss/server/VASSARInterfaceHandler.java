@@ -58,7 +58,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         
         // Initialization
         String search_clps = "";
-        params = Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
+        params = Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
         AE = ArchitectureEvaluator.getInstance();
         AE.init(1);
     }
@@ -301,14 +301,14 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         //PATH
         String path = ".";
 
-        ExecutorService pool = Executors.newFixedThreadPool(8);
+        ExecutorService pool = Executors.newFixedThreadPool(1);
         CompletionService<Algorithm> ecs = new ExecutorCompletionService<>(pool);
 
         //parameters and operators for search
         TypedProperties properties = new TypedProperties();
         //search paramaters set here
-        int popSize = 10;
-        int maxEvals = 50;
+        int popSize = dataset.size();
+        int maxEvals = dataset.size() + 50;
         properties.setInt("maxEvaluations", maxEvals);
         properties.setInt("populationSize", popSize);
         double crossoverProbability = 1.0;
@@ -330,7 +330,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         //initialize problem
         Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
-        ArchitectureEvaluator.getInstance().init(8);
+        ArchitectureEvaluator.getInstance().init(1);
         Problem problem = new InstrumentAssignment(new int[]{1});
 
         // Create a solution for each input arch in the dataset
@@ -340,12 +340,13 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                     Params.getInstance().numInstr, Params.getInstance().numOrbits, 2);
             for (int j = 1; j < new_arch.getNumberOfVariables(); ++j) {
                 BinaryVariable var = new BinaryVariable(1);
-                var.set(0,dataset.get(i).inputs.get(j));
+                var.set(0, dataset.get(i).inputs.get(j-1));
                 new_arch.setVariable(j, var);
             }
             new_arch.setObjective(0, dataset.get(i).outputs.get(0));
             new_arch.setObjective(1, dataset.get(i).outputs.get(1));
-            initial.set(i, new_arch);
+            new_arch.setAlreadyEvaluated(true);
+            initial.add(new_arch);
         }
         initialization = new InjectedInitialization(problem, popSize, initial);
 
