@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
+import rbsa.eoss.CoverageAnalysisIO;
 import org.orekit.frames.TopocentricFrame;
 import seak.orekit.analysis.Analysis;
 import seak.orekit.constellations.Walker;
@@ -41,7 +41,10 @@ import static seak.orekit.object.CoverageDefinition.GridStyle.EQUAL_AREA;
 import seak.orekit.object.fieldofview.NadirSimpleConicalFOV;
 
 import java.io.File;
+import java.io.IOException;
+import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.orekit.data.DataProvidersManager;
+import seak.orekit.event.GroundEventAnalysis;
 
 /**
  *
@@ -80,9 +83,6 @@ public class CoverageAnalysis {
         //so we are just instantiating it
         this.propertiesPropagator = new Properties();
 
-//        FieldOfViewEventAnalysis fovEventAnal = (FieldOfViewEventAnalysis) eventAnalysisFactory.createGroundPointAnalysis(EventAnalysisEnum.FOV, coverageDefinitionMap, propertiesPropagator);
-//        eventanalyses.add(fovEventAnal);
-
         // Reset the FieldOfViewEventAnalysis
         this.fovEventAnalysis = null;
     }
@@ -97,7 +97,7 @@ public class CoverageAnalysis {
      * @param numPlanes
      * @throws OrekitException
      */
-    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+    public GroundEventAnalyzer getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
 
         long start = System.nanoTime();
 
@@ -191,8 +191,8 @@ public class CoverageAnalysis {
 
         Logger.getGlobal().finer(String.format("Done Running Scenario %s", scene));
 
-        Map<TopocentricFrame, TimeIntervalArray> fovEvents = fovEventAnalysis.getEvents(coverageDefinition);
-
+        GroundEventAnalyzer fovEvents = new GroundEventAnalyzer(((GroundEventAnalysis) fovEventAnalysis).getEvents(coverageDefinition));
+     
         //output the time
         long end = System.nanoTime();
         Logger.getGlobal().finest(String.format("Took %.4f sec", (end - start) / Math.pow(10, 9)));
@@ -208,7 +208,7 @@ public class CoverageAnalysis {
      */
 
     public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double[] latBounds, double[] lonBounds) throws OrekitException{
-        Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+        GroundEventAnalyzer fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
         return this.getRevisitTime(fovEvents, latBounds, lonBounds);
     }
 
@@ -219,18 +219,27 @@ public class CoverageAnalysis {
      * @param lonBounds
      * @return 
      */
-    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents, double[] latBounds, double[] lonBounds){
+    public double getRevisitTime(GroundEventAnalyzer fovEvents, double[] latBounds, double[] lonBounds){
         // Method to compute average revisit time from accesses
-
-        GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvents);
-
+        
+        System.out.println(Arrays.asList(fovEvents));
+        
+        //output the hashmap containing all the rise and the set times
+        CoverageAnalysisIO cov = new CoverageAnalysisIO(fovEvents);;
+        
+        try{
+            cov.writeAccessData(fovEvents);
+        }catch(IOException exc){
+            throw new IllegalStateException("File output failed.", exc);
+        }
+        
         DescriptiveStatistics stat;
 
         if(latBounds.length == 0 && lonBounds.length == 0){
-            stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, this.propertiesPropagator);
+            stat = fovEvents.getStatistics(AnalysisMetric.DURATION, false, this.propertiesPropagator);
 
         }else{
-            stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, latBounds, lonBounds, this.propertiesPropagator);
+            stat = fovEvents.getStatistics(AnalysisMetric.DURATION, false, latBounds, lonBounds, this.propertiesPropagator);
         }
 
         double mean = stat.getMean();
