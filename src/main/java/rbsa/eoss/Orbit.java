@@ -24,7 +24,7 @@ public class Orbit {
     private String mission_arch;
 
     private double altitudeNum; // [m]
-    private double inclinationNum; // [rad]
+    private double inclinationNum; // [deg]
 
     public Orbit(String orb, int np, int nsat) {
         String[] tokens = orb.split("-");
@@ -67,7 +67,7 @@ public class Orbit {
 //    "LEO-600-polar-NA","SSO-600-SSO-AM"
 
         if(inclination != null && StringUtils.isNumeric(altitude)){
-            this.altitudeNum = Double.parseDouble(altitude);
+            this.altitudeNum = Double.parseDouble(altitude) * 1000;
 
         }
 
@@ -77,7 +77,7 @@ public class Orbit {
         }else{
             switch (inclination){
                 case "polar":
-                    this.inclinationNum = FastMath.toRadians(90);
+                    this.inclinationNum = 90;
                     break;
 
                 case "SSO":

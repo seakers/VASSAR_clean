@@ -84,8 +84,8 @@ public class CoverageAnalysis {
     /**
      * Computes the accesses for satellites sharing the same field of view
      * @param fieldOfView
-     * @param inclination
-     * @param altitude
+     * @param inclination [deg]
+     * @param altitude [m]
      * @param numSats
      * @param numPlanes
      * @throws OrekitException
@@ -126,9 +126,9 @@ public class CoverageAnalysis {
                 Constants.WGS84_EARTH_FLATTENING, earthFrame);
 
         //Enter satellite orbital parameters
-        double h = altitude; //altitude
+        double h = altitude; //altitude in meters
         double a = Constants.WGS84_EARTH_EQUATORIAL_RADIUS+h; //semi-major axis
-        double i = FastMath.toRadians(inclination);
+        double i = FastMath.toRadians(inclination); // inclination given in deg
 
         //define instruments and payload
         NadirSimpleConicalFOV fov = new NadirSimpleConicalFOV(FastMath.toRadians(fieldOfView), earthShape);

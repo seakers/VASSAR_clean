@@ -5,7 +5,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import rbsa.eoss.local.Params;
-import rbsa.eoss.CoverageAnalysis;
 import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.event.EventIntervalMerger;
 
@@ -157,8 +156,10 @@ public class GenericTask implements Callable {
                         }else{
                             // Newly compute the accesses
                             try{
-                                Map<TopocentricFrame, TimeIntervalArray> fovEvent = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
-                                fieldOfViewEvents.add(fovEvent);
+                                Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                                fieldOfViewEvents.add(accesses);
+
+                                CoverageAnalysisIO.writeBinaryAccessData(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
 
                             }catch (OrekitException e){
                                 System.out.println("Exception in running coverage analysis: " + e.getMessage());
