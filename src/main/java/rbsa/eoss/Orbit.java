@@ -1,5 +1,8 @@
 package rbsa.eoss;
 
+import org.apache.commons.lang3.StringUtils;
+import org.hipparchus.util.FastMath;
+
 import java.util.Objects;
 
 /**
@@ -20,7 +23,8 @@ public class Orbit {
     private String num_sats_per_plane;
     private String mission_arch;
 
-    public Orbit () { }
+    private double altitudeNum; // [m]
+    private double inclinationNum; // [rad]
 
     public Orbit(String orb, int np, int nsat) {
         String[] tokens = orb.split("-");
@@ -32,6 +36,7 @@ public class Orbit {
         num_sats_per_plane = String.valueOf(nsat);
         mission_arch = "single_arch";
         eccentricity = "0.0";
+        this.saveOrbitalParamInNumbers(altitude, inclination);
     }
 
     public Orbit(String orb) {
@@ -44,6 +49,7 @@ public class Orbit {
         num_sats_per_plane = "1";
         mission_arch = "single_arch";
         eccentricity = "0.0";
+        this.saveOrbitalParamInNumbers(altitude, inclination);
     }
 
     public Orbit(String t, String a, String i, String ra) {
@@ -54,10 +60,48 @@ public class Orbit {
         nplanes = "1";
         mission_arch = "single_arch";
         eccentricity = "0.0";
+        this.saveOrbitalParamInNumbers(altitude, inclination);
+    }
+
+    public void saveOrbitalParamInNumbers(String altitude, String inclination){
+//    "LEO-600-polar-NA","SSO-600-SSO-AM"
+
+        if(inclination != null && StringUtils.isNumeric(altitude)){
+            this.altitudeNum = Double.parseDouble(altitude);
+
+        }
+
+        if(inclination != null && StringUtils.isNumeric(inclination)){
+            this.inclinationNum = Double.parseDouble(inclination);
+
+        }else{
+            switch (inclination){
+                case "polar":
+                    this.inclinationNum = FastMath.toRadians(90);
+                    break;
+
+                case "SSO":
+                    // Calculate the inclination
+                    double h = altitudeNum;
+                    double RE = 6378000;
+                    double kh = 10.10949;
+                    double temp = (RE + h) / RE ;
+                    double cos_i = (java.lang.Math.pow( temp ,3.5)) / (-kh);
+                    double i_deg = 180 * java.lang.Math.acos(cos_i) / java.lang.Math.PI;
+                    this.inclinationNum = i_deg;
+
+                default:
+                    break;
+            }
+        }
     }
 
     public String getAltitude() {
         return altitude;
+    }
+
+    public double getAltitudeNum(){
+        return altitudeNum;
     }
 
     public String getArg_perigee() {
@@ -66,6 +110,10 @@ public class Orbit {
 
     public String getInclination() {
         return inclination;
+    }
+
+    public double getInclinationNum(){
+        return inclinationNum;
     }
 
     public String getEccentricity() {
@@ -90,6 +138,11 @@ public class Orbit {
 
     public void setAltitude(String altitude) {
         this.altitude = altitude;
+        saveOrbitalParamInNumbers(this.altitude, null);
+    }
+
+    public void setAltitudeNum(double altitude){
+        this.altitudeNum = altitude;
     }
 
     public void setArg_perigee(String arg_perigee) {
@@ -102,6 +155,11 @@ public class Orbit {
 
     public void setInclination(String inclination) {
         this.inclination = inclination;
+        saveOrbitalParamInNumbers(null, this.inclination);
+    }
+
+    public void setInclinationNum(double inclination){
+        this.inclinationNum = inclination;
     }
 
     public void setMean_anomaly(String mean_anomaly) {
@@ -161,14 +219,4 @@ public class Orbit {
         this.num_sats_per_plane = num_sats_per_plane;
     }
 
-    @Override
-    public int hashCode(){
-        int hash = 17;
-        hash = 31 * hash + Objects.hashCode(this.altitude);
-        hash = 31 * hash + Objects.hashCode(this.inclination);
-        hash = 31 * hash + Objects.hashCode(this.eccentricity);
-        hash = 31 * hash + Objects.hashCode(this.nplanes);
-        hash = 31 * hash + Objects.hashCode(this.num_sats_per_plane);
-        return hash;
-    }
 }

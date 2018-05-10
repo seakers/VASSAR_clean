@@ -54,7 +54,6 @@ public class CoverageAnalysis {
     private String cwd;
     private Properties propertiesPropagator;
     private CoverageDefinition.GridStyle gridStyle;
-    private FieldOfViewEventAnalysis fovEventAnalysis;
 
     public CoverageAnalysis(int numThreads, int coverageGridGranularity){
 
@@ -79,12 +78,6 @@ public class CoverageAnalysis {
         //to the satellite but we don't need them right now
         //so we are just instantiating it
         this.propertiesPropagator = new Properties();
-
-//        FieldOfViewEventAnalysis fovEventAnal = (FieldOfViewEventAnalysis) eventAnalysisFactory.createGroundPointAnalysis(EventAnalysisEnum.FOV, coverageDefinitionMap, propertiesPropagator);
-//        eventanalyses.add(fovEventAnal);
-
-        // Reset the FieldOfViewEventAnalysis
-        this.fovEventAnalysis = null;
     }
 
 
@@ -117,6 +110,7 @@ public class CoverageAnalysis {
             pathBuffer.append(File.separator);
             pathBuffer.append("orekit-data");
         }
+
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, pathBuffer.toString());
 
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -184,6 +178,7 @@ public class CoverageAnalysis {
             Logger.getGlobal().finer(String.format("Number of points:     %d", coverageDefinition.getNumberOfPoints()));
             Logger.getGlobal().finer(String.format("Number of satellites: %d", walker.getSatellites().size()));
             scene.call();
+
         } catch (Exception ex) {
             Logger.getLogger(CoverageAnalysis.class.getName()).log(Level.SEVERE, null, ex);
             throw new IllegalStateException("scenario failed to complete.");
@@ -200,7 +195,6 @@ public class CoverageAnalysis {
 
         return fovEvents;
     }
-
 
     public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double[] latBounds, double[] lonBounds) throws OrekitException{
         Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
@@ -228,7 +222,7 @@ public class CoverageAnalysis {
 
         double mean = stat.getMean();
 
-        System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
+        System.out.println(String.format("Mean revisit time %s", mean));
 
         return mean;
     }

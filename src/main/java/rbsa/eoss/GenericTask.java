@@ -30,6 +30,8 @@ public class GenericTask implements Callable {
         this.params = Params.getInstance();
         this.arch = arch;
         this.type = type;
+        this.orbits = new ArrayList<>();
+
         debug = arch.getEvalMode().equalsIgnoreCase("DEBUG");
     }
 
@@ -113,11 +115,11 @@ public class GenericTask implements Callable {
             r.setFocus("SYNERGIES");
             r.run();
 
-
             int javaAssertedFactID = 1;
+            int coverageGranularity = 20;
 
             //Revisit times
-            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, 20);
+            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity);
             double[] latBounds = new double[]{FastMath.toRadians(-70), FastMath.toRadians(70)};
             double[] lonBounds = new double[]{FastMath.toRadians(-180), FastMath.toRadians(180)};
 
@@ -131,6 +133,7 @@ public class GenericTask implements Callable {
                     ValueVector thefovs = v.listValue(r.getGlobalContext());
                     List<Map<TopocentricFrame, TimeIntervalArray>> fieldOfViewEvents = new ArrayList<>();
 
+                    // For each fieldOfview-orbit combination
                     for(int i = 0; i < this.orbits.size(); i++){
                         Orbit orb = this.orbits.get(i);
                         int fov = thefovs.get(i).intValue(r.getGlobalContext());
@@ -139,21 +142,29 @@ public class GenericTask implements Callable {
                             continue;
                         }
 
-                        //"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-AM","SSO-800-SSO-DD"
                         double fieldOfView = fov; // [deg]
-                        double inclination = 98; // [deg]
-                        double altitude = Double.parseDouble(orb.getAltitude()); // [m]
+                        double inclination = orb.getInclinationNum(); // [deg]
+                        double altitude = orb.getAltitudeNum(); // [m]
+
                         int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
                         int numPlanes = Integer.parseInt(orb.getNplanes());
 
-                        // Compute the accesses for each orbit
-                        try{
-                            Map<TopocentricFrame, TimeIntervalArray> fovEvent = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
-                            fieldOfViewEvents.add(fovEvent);
+                        if(CoverageAnalysisIO.getBinaryAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity).exists()){
+                            // The access data exists
+                            Map<TopocentricFrame, TimeIntervalArray> accesses = CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
+                            fieldOfViewEvents.add(accesses);
 
-                        }catch (OrekitException e){
-                            System.out.println("Exception in running coverage analysis: " + e.getMessage());
-                            e.printStackTrace();
+                        }else{
+                            // Newly compute the accesses
+                            try{
+                                Map<TopocentricFrame, TimeIntervalArray> fovEvent = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                                fieldOfViewEvents.add(fovEvent);
+
+                            }catch (OrekitException e){
+                                System.out.println("Exception in running coverage analysis: " + e.getMessage());
+                                e.printStackTrace();
+                            }
+
                         }
                     }
 
@@ -161,7 +172,6 @@ public class GenericTask implements Callable {
                     Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>();
 
                     for(Map<TopocentricFrame, TimeIntervalArray> event: fieldOfViewEvents){
-
                         mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
                     }
 
@@ -178,7 +188,7 @@ public class GenericTask implements Callable {
 
 //            // Check if all of the orbits in the original formulation are used
 //            boolean[] orbitsUsed = new boolean[5];
-//            String[] list = {"LEO-600-polar-NA", "SSO-600-SSO-AM", "SSO-600-SSO-DD", "SSO-800-SSO-DD", "SSO-800-SSO-PM"};
+//            String[] list = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-AM","SSO-800-SSO-DD"};
 //            for (int i = 0; i < list.length; i++) {
 //                orbitsUsed[i] = false;
 //                for (String orb: params.orbitList) {
@@ -467,6 +477,9 @@ public class GenericTask implements Callable {
     private void assertMissions(Rete r, Architecture arch, MatlabFunctions m) {
         boolean[][] mat = arch.getBitMatrix();
         try {
+
+            this.orbits = new ArrayList<>();
+
             for (int i = 0; i < params.numOrbits; i++) {
                 int ninstrs = m.sumRowBool(mat, i);
                 if (ninstrs > 0) {
