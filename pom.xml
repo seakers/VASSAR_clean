@@ -30,6 +30,10 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+                        <shadedArtifactAttached>true</shadedArtifactAttached>
+                        <shadedClassifierName>launcher</shadedClassifierName> <!-- Can be any name that makes sense -->
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

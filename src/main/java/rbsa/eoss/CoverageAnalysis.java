@@ -5,6 +5,7 @@
  */
 package rbsa.eoss;
 
+import seak.orekit.coverage.access.TimeIntervalArray;
 import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -13,7 +14,6 @@ import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.orekit.frames.TopocentricFrame;
 import seak.orekit.analysis.Analysis;
 import seak.orekit.constellations.Walker;
-import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.object.CoverageDefinition;
 import seak.orekit.object.Instrument;
 import seak.orekit.propagation.PropagatorFactory;
@@ -202,15 +202,23 @@ public class CoverageAnalysis {
     }
 
 
+    /**
+     * takes information about the fov events and the orbits
+     * to calculate the rise and set times of the accesses
+     */
+
     public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double[] latBounds, double[] lonBounds) throws OrekitException{
         Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
         return this.getRevisitTime(fovEvents, latBounds, lonBounds);
     }
 
-    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents){
-        return getRevisitTime(fovEvents,  new double[0], new double[0]);
-    }
-
+    /**
+     * computes the revisit time using the accesses
+     * @param fovEvents
+     * @param latBounds
+     * @param lonBounds
+     * @return 
+     */
     public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents, double[] latBounds, double[] lonBounds){
         // Method to compute average revisit time from accesses
 
@@ -229,7 +237,6 @@ public class CoverageAnalysis {
 
         //System.out.println(String.format("Max access time %s", mean)); // Mean revisit time?
 
-        
         return mean;
     }
 }
