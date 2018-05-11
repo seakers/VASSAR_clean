@@ -7,8 +7,6 @@ import rbsa.eoss.*;
 import rbsa.eoss.local.Params;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 class EvalPerformanceTest {
@@ -17,12 +15,14 @@ class EvalPerformanceTest {
     private ArchitectureEvaluator AE = null;
 
     public void initJess() {
+        
         // Set a path to the project folder
-        String path = System.getProperty("user.dir");
+        File path = new File(System.getProperty("user.dir"),"root");
+        System.setProperty("test", path.getAbsolutePath());
 
         // Initialization
         String search_clps = "";
-        params = Params.initInstance(path, "FUZZY-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
+        params = Params.initInstance(path.getAbsolutePath(), "FUZZY-ATTRIBUTES", "test","normal", search_clps);//FUZZY or CRISP
         AE = ArchitectureEvaluator.getInstance();
         AE.init(1);
     }

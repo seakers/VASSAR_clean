@@ -5,22 +5,17 @@
  */
 package rbsa.eoss;
 
-import java.util.*;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.orekit.bodies.GeodeticPoint;
-import org.orekit.frames.TopocentricFrame;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.time.*;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Locale;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.io.File;
 import seak.orekit.analysis.Analysis;
 import seak.orekit.constellations.Walker;
-import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.object.CoverageDefinition;
 import seak.orekit.object.CoveragePoint;
 import seak.orekit.object.Instrument;
@@ -28,14 +23,7 @@ import seak.orekit.propagation.PropagatorFactory;
 import seak.orekit.propagation.PropagatorType;
 import seak.orekit.scenario.Scenario;
 import seak.orekit.util.OrekitConfig;
-import org.hipparchus.util.FastMath;
-import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
+import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.coverage.analysis.AnalysisMetric;
 import seak.orekit.coverage.analysis.GroundEventAnalyzer;
 import seak.orekit.event.EventAnalysis;
@@ -44,8 +32,27 @@ import seak.orekit.event.EventAnalysisFactory;
 import seak.orekit.event.FieldOfViewEventAnalysis;
 import static seak.orekit.object.CoverageDefinition.GridStyle.EQUAL_AREA;
 import seak.orekit.object.fieldofview.NadirSimpleConicalFOV;
-
-import java.io.File;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.stat.descriptive.DescriptiveStatistics;
+import org.hipparchus.util.FastMath;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScale;
+import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.data.DataProvidersManager;
 
 /**
@@ -56,7 +63,7 @@ public class CoverageAnalysis {
 
     private int numThreads;
     private int coverageGridGranularity;
-    private String cwd;
+    private String cwd; //current working directory
     private Properties propertiesPropagator;
     private CoverageDefinition.GridStyle gridStyle;
     private boolean saveAccessData;
@@ -140,7 +147,7 @@ public class CoverageAnalysis {
 
     public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException {
 
-        if(CoverageAnalysisIO.getBinaryAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity).exists()){
+        if(CoverageAnalysisIO.getAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity).exists()){
             // The access data exists
             System.out.println("Corresponding data file found");
             return CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
@@ -274,16 +281,16 @@ public class CoverageAnalysis {
 
         Logger.getGlobal().finer(String.format("Done Running Scenario %s", scene));
 
-        Map<TopocentricFrame, TimeIntervalArray> fovEvents = fovEventAnalysis.getEvents(coverageDefinition);
+        Map<TopocentricFrame, TimeIntervalArray> accesses = fovEventAnalysis.getEvents(coverageDefinition);
 
         //output the time
         long end = System.nanoTime();
         Logger.getGlobal().finest(String.format("Took %.4f sec", (end - start) / Math.pow(10, 9)));
-
         OrekitConfig.end();
 
-        return fovEvents;
+        return accesses;
     }
+
 
     public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents){
         return getRevisitTime(fovEvents,  new double[0], new double[0]);
@@ -301,12 +308,10 @@ public class CoverageAnalysis {
 
         }else{
             stat = eventAnalyzer.getStatistics(AnalysisMetric.DURATION, false, latBounds, lonBounds, this.propertiesPropagator);
-
         }
 
         double mean = stat.getMean();
         System.out.println(String.format("Mean revisit time %s", mean));
-
         return mean;
     }
 
