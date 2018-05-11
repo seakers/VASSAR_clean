@@ -148,28 +148,11 @@ public class GenericTask implements Callable {
                         int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
                         int numPlanes = Integer.parseInt(orb.getNplanes());
 
-                        if(CoverageAnalysisIO.getBinaryAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity).exists()){
-                            // The access data exists
-                            Map<TopocentricFrame, TimeIntervalArray> accesses = CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
-                            fieldOfViewEvents.add(accesses);
-
-                        }else{
-                            // Newly compute the accesses
-                            try{
-                                Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
-                                fieldOfViewEvents.add(accesses);
-
-                                CoverageAnalysisIO.writeBinaryAccessData(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
-
-                            }catch (OrekitException e){
-                                System.out.println("Exception in running coverage analysis: " + e.getMessage());
-                                e.printStackTrace();
-                            }
-
-                        }
+                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                        fieldOfViewEvents.add(accesses);
                     }
 
-                    // Write a function to combine accesses to get the revisit time
+                    // Merge accesses to get the revisit time
                     Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>();
 
                     for(Map<TopocentricFrame, TimeIntervalArray> event: fieldOfViewEvents){

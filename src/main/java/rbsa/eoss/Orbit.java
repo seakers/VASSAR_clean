@@ -2,6 +2,8 @@ package rbsa.eoss;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hipparchus.util.FastMath;
+import org.orekit.utils.Constants;
+import seak.orekit.object.OrbitWizard;
 
 import java.util.Objects;
 
@@ -67,12 +69,12 @@ public class Orbit {
 //    "LEO-600-polar-NA","SSO-600-SSO-AM"
 
         if(inclination != null && StringUtils.isNumeric(altitude)){
-            this.altitudeNum = Double.parseDouble(altitude) * 1000;
+            this.altitudeNum = Double.parseDouble(altitude) * 1000;  // [m]
 
         }
 
         if(inclination != null && StringUtils.isNumeric(inclination)){
-            this.inclinationNum = Double.parseDouble(inclination);
+            this.inclinationNum = Double.parseDouble(inclination); // [deg]
 
         }else{
             switch (inclination){
@@ -82,13 +84,8 @@ public class Orbit {
 
                 case "SSO":
                     // Calculate the inclination
-                    double h = altitudeNum;
-                    double RE = 6378000;
-                    double kh = 10.10949;
-                    double temp = (RE + h) / RE ;
-                    double cos_i = (java.lang.Math.pow( temp ,3.5)) / (-kh);
-                    double i_deg = 180 * java.lang.Math.acos(cos_i) / java.lang.Math.PI;
-                    this.inclinationNum = i_deg;
+                    double semimajoraxis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + altitudeNum;
+                    this.inclinationNum = OrbitWizard.SSOinc(semimajoraxis, 0.0); // [deg]
 
                 default:
                     break;

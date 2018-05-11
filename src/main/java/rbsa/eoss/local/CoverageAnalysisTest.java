@@ -8,12 +8,8 @@ import rbsa.eoss.CoverageAnalysisIO;
 import rbsa.eoss.Orbit;
 import seak.orekit.coverage.access.TimeIntervalArray;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.io.File;
 import java.util.StringJoiner;
-import java.util.logging.Logger;
 
 public class CoverageAnalysisTest {
 
@@ -44,7 +40,7 @@ public class CoverageAnalysisTest {
                 long start = System.nanoTime();
                 //output the time
 
-                Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
                 double revisitTime1 = coverageAnalysis.getRevisitTime(accesses);
 
                 long t1 = System.nanoTime();
@@ -89,18 +85,7 @@ public class CoverageAnalysisTest {
                         double inclination = orb.getInclinationNum(); // [deg]
                         double altitude = orb.getAltitudeNum(); // [m]
 
-                        Map<TopocentricFrame, TimeIntervalArray> accesses;
-
-                        if(CoverageAnalysisIO.getBinaryAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity).exists()){
-                            // The access data exists
-                            System.out.println("Corresponding data file found");
-                            accesses = CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
-
-                        }else{
-                            // Newly compute the accesses
-                            accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
-                            CoverageAnalysisIO.writeBinaryAccessData(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, 20);
-                        }
+                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
 
                         double revisitTime = coverageAnalysis.getRevisitTime(accesses);
 

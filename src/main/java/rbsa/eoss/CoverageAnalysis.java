@@ -80,6 +80,26 @@ public class CoverageAnalysis {
         this.propertiesPropagator = new Properties();
     }
 
+    public void setCoverageGridGranularity(int granularity){
+        this.coverageGridGranularity = granularity;
+        this.reset();
+    }
+
+    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException {
+
+        if(CoverageAnalysisIO.getBinaryAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity).exists()){
+            // The access data exists
+            System.out.println("Corresponding data file found");
+            return CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+
+        }else{
+            // Newly compute the accesses
+            Map<TopocentricFrame, TimeIntervalArray> accesses = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+            CoverageAnalysisIO.writeBinaryAccessData(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+
+            return accesses;
+        }
+    }
 
     /**
      * Computes the accesses for satellites sharing the same field of view
@@ -90,7 +110,7 @@ public class CoverageAnalysis {
      * @param numPlanes
      * @throws OrekitException
      */
-    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+    public Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
 
         long start = System.nanoTime();
 
@@ -197,7 +217,7 @@ public class CoverageAnalysis {
     }
 
     public double getRevisitTime(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double[] latBounds, double[] lonBounds) throws OrekitException{
-        Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+        Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
         return this.getRevisitTime(fovEvents, latBounds, lonBounds);
     }
 
