@@ -151,7 +151,9 @@ public class CoverageAnalysis {
         //number of phases
         int f = 0;
 
-        Walker walker = new Walker("walker1", payload, a, i, t, p, f, inertialFrame, startDate, mu);
+        double raan = 0;
+        double anomaly = 0;
+        Walker walker = new Walker("walker1", payload, a, i, t, p, f, inertialFrame, startDate, mu, raan, anomaly);
 
         //define coverage params
         //this is coverage with 20 granularity and equal area grid style
