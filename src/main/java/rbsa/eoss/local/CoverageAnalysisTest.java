@@ -17,7 +17,7 @@ public class CoverageAnalysisTest {
 
         try {
             int coverageGranularity = 20;
-            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true);
+            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, true);
 
             String path = ".";
             Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
@@ -28,7 +28,7 @@ public class CoverageAnalysisTest {
             double[] latBounds = new double[]{FastMath.toRadians(-70), FastMath.toRadians(70)};
             double[] lonBounds = new double[]{FastMath.toRadians(-180), FastMath.toRadians(180)};
 
-            CoverageAnalysisMode mode = CoverageAnalysisMode.NESTED;
+            CoverageAnalysisMode mode = CoverageAnalysisMode.SINGLE;
 
             if(mode == CoverageAnalysisMode.SINGLE){
 
@@ -44,14 +44,6 @@ public class CoverageAnalysisTest {
 
                     long t1 = System.nanoTime();
                     System.out.println(String.format("Took %.4f sec", (t1 - start) / Math.pow(10, 9)));
-
-//                    CoverageAnalysisIO.writeAccessDataBinary(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
-//
-//                    Map<TopocentricFrame, TimeIntervalArray> accesses2 = CoverageAnalysisIO.readAccessDataBinary(fieldOfView, inclination, altitude, numSats, numPlanes, coverageGranularity);
-//                    double revisitTime2 = coverageAnalysis.getRevisitTime(accesses2);
-//
-//                    System.out.println(revisitTime1);
-//                    System.out.println(revisitTime2);
 
                     long end = System.nanoTime();
                     System.out.println(String.format("Took %.4f sec", (end - t1) / Math.pow(10, 9)));

@@ -70,14 +70,18 @@ public class CoverageAnalysis {
     private AbsoluteDate startDate;
     private AbsoluteDate endDate;
 
-    public CoverageAnalysis(int numThreads, int coverageGridGranularity, boolean saveAccessData) throws OrekitException{
+    public CoverageAnalysis(int numThreads, int coverageGridGranularity) throws OrekitException{
+        this(numThreads, coverageGridGranularity, true, true);
+    }
+
+    public CoverageAnalysis(int numThreads, int coverageGridGranularity, boolean saveAccessData, boolean binaryEncoding) throws OrekitException{
 
         this.numThreads = numThreads;
         this.coverageGridGranularity = coverageGridGranularity;
         this.gridStyle = EQUAL_AREA;
         this.cwd = System.getProperty("user.dir");
         this.saveAccessData = saveAccessData;
-        this.binaryEncoding = true;
+        this.binaryEncoding = binaryEncoding;
         this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding);
 
         //setup logger
@@ -90,11 +94,6 @@ public class CoverageAnalysis {
         //if running on a non-US machine, need the line below
         Locale.setDefault(new Locale("en", "US"));
 
-        // Default start date and end date with 7-day run time
-        TimeScale utc = TimeScalesFactory.getUTC();
-        this.startDate = new AbsoluteDate(2020, 1, 1, 00, 00, 00.000, utc);
-        this.endDate = startDate.shiftedBy(7 * 24 * 60 * 60); // 7 days in seconds
-
         // Load default dataset saved in the project root directory
         StringBuffer pathBuffer = new StringBuffer();
 
@@ -106,6 +105,11 @@ public class CoverageAnalysis {
         }
 
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, pathBuffer.toString());
+        
+        // Default start date and end date with 7-day run time
+        TimeScale utc = TimeScalesFactory.getUTC();
+        this.startDate = new AbsoluteDate(2020, 1, 1, 00, 00, 00.000, utc);
+        this.endDate = startDate.shiftedBy(7 * 24 * 60 * 60); // 7 days in seconds
 
         reset();
     }
