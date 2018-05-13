@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.io.File;
 import seak.orekit.analysis.Analysis;
 import seak.orekit.constellations.Walker;
+import seak.orekit.event.*;
 import seak.orekit.object.CoverageDefinition;
 import seak.orekit.object.CoveragePoint;
 import seak.orekit.object.Instrument;
@@ -26,10 +27,7 @@ import seak.orekit.util.OrekitConfig;
 import seak.orekit.coverage.access.TimeIntervalArray;
 import seak.orekit.coverage.analysis.AnalysisMetric;
 import seak.orekit.coverage.analysis.GroundEventAnalyzer;
-import seak.orekit.event.EventAnalysis;
-import seak.orekit.event.EventAnalysisEnum;
-import seak.orekit.event.EventAnalysisFactory;
-import seak.orekit.event.FieldOfViewEventAnalysis;
+
 import static seak.orekit.object.CoverageDefinition.GridStyle.EQUAL_AREA;
 import seak.orekit.object.fieldofview.NadirSimpleConicalFOV;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -66,8 +64,9 @@ public class CoverageAnalysis {
     private String cwd; //current working directory
     private Properties propertiesPropagator;
     private CoverageDefinition.GridStyle gridStyle;
+    private boolean binaryEncoding;
+    private CoverageAnalysisIO coverageAnalysisIO;
     private boolean saveAccessData;
-
     private AbsoluteDate startDate;
     private AbsoluteDate endDate;
 
@@ -78,6 +77,8 @@ public class CoverageAnalysis {
         this.gridStyle = EQUAL_AREA;
         this.cwd = System.getProperty("user.dir");
         this.saveAccessData = saveAccessData;
+        this.binaryEncoding = true;
+        this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding);
 
         //setup logger
         Level level = Level.ALL;
@@ -147,20 +148,22 @@ public class CoverageAnalysis {
 
     public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException {
 
-        if(CoverageAnalysisIO.getAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity).exists()){
+        CoverageAnalysisIO.AccessDataDefinition definition = new CoverageAnalysisIO.AccessDataDefinition(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+
+        if(this.coverageAnalysisIO.getAccessDataFile(definition).exists()){
             // The access data exists
             System.out.println("Corresponding data file found");
-            return CoverageAnalysisIO.readBinaryAccessData(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+            return this.coverageAnalysisIO.readAccessData(definition);
 
         }else{
             // Newly compute the accesses
-            Map<TopocentricFrame, TimeIntervalArray> accesses = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+            Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
 
             if(this.saveAccessData){
-                CoverageAnalysisIO.writeBinaryAccessData(accesses, fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+                this.coverageAnalysisIO.writeAccessData(definition, fovEvents);
             }
 
-            return accesses;
+            return fovEvents;
         }
     }
 
@@ -291,15 +294,14 @@ public class CoverageAnalysis {
         return accesses;
     }
 
-
-    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents){
-        return getRevisitTime(fovEvents,  new double[0], new double[0]);
+    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> accesses){
+        return getRevisitTime(accesses,  new double[0], new double[0]);
     }
 
-    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> fovEvents, double[] latBounds, double[] lonBounds){
+    public double getRevisitTime(Map<TopocentricFrame, TimeIntervalArray> accesses, double[] latBounds, double[] lonBounds){
         // Method to compute average revisit time from accesses
 
-        GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(fovEvents);
+        GroundEventAnalyzer eventAnalyzer = new GroundEventAnalyzer(accesses);
 
         DescriptiveStatistics stat;
 
@@ -349,7 +351,7 @@ public class CoverageAnalysis {
         while(tempEndDate.compareTo(this.startDate) < 1){
 
             // Shift 1 day
-            tempEndDate.shiftedBy(24 * 60 * 60);
+            tempEndDate = tempEndDate.shiftedBy(24 * 60 * 60);
         }
 
         for(double raan = 0; raan < 360; raan += 0.1){

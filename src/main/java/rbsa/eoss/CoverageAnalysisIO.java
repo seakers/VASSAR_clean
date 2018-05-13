@@ -8,10 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.math3.util.FastMath;
@@ -21,8 +18,6 @@ import seak.orekit.coverage.analysis.AnalysisMetric;
 import seak.orekit.coverage.analysis.GroundEventAnalyzer;
 import seak.orekit.object.CoveragePoint;
 import java.io.*;
-import java.util.Map;
-import java.util.HashMap;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.orekit.frames.TopocentricFrame;
 import seak.orekit.coverage.access.TimeIntervalArray;
@@ -32,29 +27,119 @@ import seak.orekit.coverage.access.TimeIntervalArray;
  * @author Prachi
  */
 
-
 public class CoverageAnalysisIO {
 
     private boolean binaryEncoding;
 
-    private GroundEventAnalyzer fovEventAnalyzer;
-    private Iterator<CoveragePoint> iterator;
-    private int count;
-
-    public CoverageAnalysisIO(){
-        this.binaryEncoding = true;
+    public CoverageAnalysisIO(boolean binaryEncoding){
+        this.binaryEncoding = binaryEncoding;
     }
 
-    public CoverageAnalysisIO(GroundEventAnalyzer fovEventAnalyzer) {
-        this.binaryEncoding = false;
-        this.fovEventAnalyzer = fovEventAnalyzer;
-        this.iterator = fovEventAnalyzer.getCoveragePoints().iterator();
-        this.count = 0;
+    public void setBinaryEncoding(boolean binaryEncoding){
+        this.binaryEncoding = binaryEncoding;
     }
 
-    protected String nextEntry() {
-        if (iterator.hasNext()) {
-            CoveragePoint point = iterator.next();
+    public void writeAccessData(AccessDataDefinition definition, Map<TopocentricFrame, TimeIntervalArray> fovEvents){
+        if(this.binaryEncoding){
+            this.writeAccessDataBinary(definition, fovEvents);
+
+        }else{
+            this.writeAccessDataCSV(definition, fovEvents);
+        }
+    }
+
+    public Map<TopocentricFrame, TimeIntervalArray> readAccessData(AccessDataDefinition definition){
+        if(this.binaryEncoding){
+            return this.readAccessDataBinary(definition);
+        }else{
+            //this.readAccessData();
+        }
+        return this.readAccessDataBinary(definition);
+    }
+
+//    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) {
+//
+//        String line;
+//        List<Double> latitude = new ArrayList<>();
+//        List<Double> longitude = new ArrayList<>();
+//        List<SimpleDateFormat> startTime = new ArrayList<>();
+//        List<AbsoluteDate> stopTime = new ArrayList<>();
+//        List<Double> riseTime = new ArrayList<>();
+//        List<Double> setTime = new ArrayList<>();
+//
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX");
+//
+//        try (BufferedReader br = new BufferedReader(
+//                new FileReader(new File(System.getProperty("test"), "CoverageResults" + ".csv")))) {
+//
+//            while ((line = br.readLine()) != null) {
+//
+//                String[] entry = line.split(","); // use comma as separator
+//                int columns = entry.length; //get the number of columns in a row
+//
+//                latitude.add(Double.parseDouble(entry[0]));
+//                longitude.add(Double.parseDouble(entry[1]));
+//
+//                for (int i = 0; i < columns; i = i + 2) {
+//                    riseTime.add(Double.parseDouble(entry[i + 4]));
+//                    setTime.add(Double.parseDouble(entry[i + 5]));
+//                }
+//            }
+//
+//            br.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+
+    public void writeAccessDataCSV(AccessDataDefinition definition, Map<TopocentricFrame, TimeIntervalArray> fovEvents){
+
+        File file = getAccessDataFile(definition);
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+
+            StringJoiner sj = new StringJoiner(",");
+
+            sj.add("Latitude [deg]");
+            sj.add("Longitude [deg]");
+            sj.add("Start Time [UTC]");
+            sj.add("Stop Time [UTC]");
+            sj.add("Rise Time [s]");
+            sj.add("Set Time [s]");
+            bw.append(sj.toString());
+            bw.newLine();
+            bw.flush();
+
+            GroundEventAnalyzer fovEventAnalyzer = new GroundEventAnalyzer(fovEvents);
+            Iterator<CoveragePoint> iterator = fovEventAnalyzer.getCoveragePoints().iterator();
+
+            String datarow = nextEntry(iterator, fovEventAnalyzer);
+            while (datarow != null) {
+                bw.append(datarow);
+                bw.newLine();
+                datarow = nextEntry(iterator, fovEventAnalyzer);
+            }
+            bw.flush();
+
+        } catch (FileNotFoundException exc) {
+            System.out.println("Exc in finding the file: " + exc.getMessage());
+            exc.printStackTrace();
+
+        } catch (IOException exc) {
+            System.out.println("Exc in writing access data in csv: " + exc.getMessage());
+            exc.printStackTrace();
+
+        }
+    }
+
+    private String nextEntry(Iterator<CoveragePoint> coveragePointsIterator, GroundEventAnalyzer fovEventAnalyzer) {
+
+        if (coveragePointsIterator.hasNext()) {
+            CoveragePoint point = coveragePointsIterator.next();
             Properties prop = new Properties();
 
             DescriptiveStatistics accesses = fovEventAnalyzer.getStatistics(AnalysisMetric.DURATION, true, point, prop);
@@ -70,13 +155,12 @@ public class CoverageAnalysisIO {
 
             if (riseSetTimesSize == 0) {
                 return String.join(",", entry);
+
             } else {
                 for (int i = 0; i < riseSetTimesSize; i++) {
                     entry[i + 4] = String.valueOf(riseSetTimes.getElement(i));
                 }
             }
-
-            count++;
 
             return String.join(",", entry);
 
@@ -86,78 +170,10 @@ public class CoverageAnalysisIO {
         }
     }
 
-    public boolean readAccessData() {
-
-        String line;
-        List<Double> latitude = new ArrayList<>();
-        List<Double> longitude = new ArrayList<>();
-        List<SimpleDateFormat> startTime = new ArrayList<>();
-        List<AbsoluteDate> stopTime = new ArrayList<>();
-        List<Double> riseTime = new ArrayList<>();
-        List<Double> setTime = new ArrayList<>();
-
-
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX");
-
-        try (BufferedReader br = new BufferedReader(
-                new FileReader(new File(System.getProperty("test"), "CoverageResults" + ".csv")))) {
-
-            while ((line = br.readLine()) != null) {
-
-                String[] entry = line.split(","); // use comma as separator
-                int columns = entry.length; //get the number of columns in a row
-
-                latitude.add(Double.parseDouble(entry[0]));
-                longitude.add(Double.parseDouble(entry[1]));
-
-                for (int i = 0; i < columns; i = i + 2) {
-                    riseTime.add(Double.parseDouble(entry[i + 4]));
-                    setTime.add(Double.parseDouble(entry[i + 5]));
-                }
-            }
-
-            br.close();
-        } catch (FileNotFoundException e) {
-
-            e.printStackTrace();
-            return false;
-
-        } catch (IOException e) {
-
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
-    public boolean writeAccessData(GroundEventAnalyzer fovEvents) throws IOException {
-
-        try (BufferedWriter bw = new BufferedWriter(
-                new FileWriter(new File(System.getProperty("test"), "CoverageResults" + ".csv")))) {
-
-            bw.append("Latitude [deg]").append(",").append("Longitude [deg]").append(",").append("Start Time [UTC]").append(",").append("Stop Time [UTC]").append(",").append("Rise Time [s]").append(",").append("Set Time [s]");
-
-            bw.newLine();
-            String datarow = nextEntry();
-            while (datarow != null) {
-                bw.append(datarow);
-                bw.newLine();
-                datarow = nextEntry();
-            }
-            bw.flush();
-
-        } catch (IOException exc) {
-            Logger.getLogger(CoverageAnalysisIO.class.getName()).log(Level.SEVERE, null, exc);
-            return false;
-        }
-        return true;
-    }
-
-
-    public File getAccessDataFile(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity) {
+    public File getAccessDataFile(AccessDataDefinition definition) {
 
         StringBuilder filename = new StringBuilder();
-        filename.append(String.valueOf(getHashCode(fieldOfView, inclination, altitude, numSats, numPlanes, granularity)));
+        filename.append(String.valueOf(definition.hashCode()));
 
         if(!this.binaryEncoding){
             filename.append(".csv");
@@ -169,9 +185,9 @@ public class CoverageAnalysisIO {
                 );
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> readBinaryAccessData(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity) {
+    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataBinary(AccessDataDefinition definition) {
 
-        File file = getAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, granularity);
+        File file = getAccessDataFile(definition);
 
         Map<TopocentricFrame, TimeIntervalArray> out = new HashMap<>();
 
@@ -193,9 +209,9 @@ public class CoverageAnalysisIO {
         return out;
     }
 
-    public void writeBinaryAccessData(Map<TopocentricFrame, TimeIntervalArray> accesses, double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity) {
+    public void writeAccessDataBinary(AccessDataDefinition definition, Map<TopocentricFrame, TimeIntervalArray> accesses) {
 
-        File file = getAccessDataFile(fieldOfView, inclination, altitude, numSats, numPlanes, granularity);
+        File file = getAccessDataFile(definition);
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
 
@@ -212,19 +228,39 @@ public class CoverageAnalysisIO {
         }
     }
 
-    public static int getHashCode(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity) {
+    public static class AccessDataDefinition {
 
-        // Round inclination and altitude values to the first decimal
-        double inclinationRoundOff = Math.round(inclination * 10.0) / 10.0;
-        double altitudeRoundOff = Math.round(altitude * 10.0) / 10.0;
+        private double fieldOfView;
+        private double inclination;
+        private double altitude;
+        private int numSats;
+        private int numPlanes;
+        private int granularity;
 
-        return new HashCodeBuilder(17, 37).
-                append(fieldOfView).
-                append(inclinationRoundOff).
-                append(altitudeRoundOff).
-                append(numSats).
-                append(numPlanes).
-                append(granularity).
-                toHashCode();
+        public AccessDataDefinition(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity){
+            this.fieldOfView = fieldOfView;
+            this.inclination = inclination;
+            this.altitude = altitude;
+            this.numSats = numSats;
+            this.numPlanes = numPlanes;
+            this.granularity = granularity;
+        }
+
+        @Override
+        public int hashCode() {
+
+            // Round inclination and altitude values to the first decimal
+            double inclinationRoundOff = Math.round(inclination * 10.0) / 10.0;
+            double altitudeRoundOff = Math.round(altitude * 10.0) / 10.0;
+
+            return new HashCodeBuilder(17, 37).
+                    append(fieldOfView).
+                    append(inclinationRoundOff).
+                    append(altitudeRoundOff).
+                    append(numSats).
+                    append(numPlanes).
+                    append(granularity).
+                    toHashCode();
+        }
     }
 }
