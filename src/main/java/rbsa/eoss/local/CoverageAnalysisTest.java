@@ -17,7 +17,7 @@ public class CoverageAnalysisTest {
 
         try {
             int coverageGranularity = 20;
-            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, true);
+            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, false);
 
             String path = ".";
             Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
@@ -39,7 +39,7 @@ public class CoverageAnalysisTest {
                     long start = System.nanoTime();
                     //output the time
 
-                    Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                    Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
                     double revisitTime1 = coverageAnalysis.getRevisitTime(accesses);
 
                     long t1 = System.nanoTime();

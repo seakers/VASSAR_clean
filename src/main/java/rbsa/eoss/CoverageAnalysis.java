@@ -52,6 +52,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 
 /**
  *
@@ -76,14 +78,6 @@ public class CoverageAnalysis {
 
     public CoverageAnalysis(int numThreads, int coverageGridGranularity, boolean saveAccessData, boolean binaryEncoding) throws OrekitException{
 
-        this.numThreads = numThreads;
-        this.coverageGridGranularity = coverageGridGranularity;
-        this.gridStyle = EQUAL_AREA;
-        this.cwd = System.getProperty("user.dir");
-        this.saveAccessData = saveAccessData;
-        this.binaryEncoding = binaryEncoding;
-        this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding);
-
         //setup logger
         Level level = Level.ALL;
         Logger.getGlobal().setLevel(level);
@@ -103,13 +97,20 @@ public class CoverageAnalysis {
             pathBuffer.append(File.separator);
             pathBuffer.append("orekit-data");
         }
-
         System.setProperty(DataProvidersManager.OREKIT_DATA_PATH, pathBuffer.toString());
-        
+
         // Default start date and end date with 7-day run time
         TimeScale utc = TimeScalesFactory.getUTC();
         this.startDate = new AbsoluteDate(2020, 1, 1, 00, 00, 00.000, utc);
         this.endDate = startDate.shiftedBy(7 * 24 * 60 * 60); // 7 days in seconds
+
+        this.numThreads = numThreads;
+        this.coverageGridGranularity = coverageGridGranularity;
+        this.gridStyle = EQUAL_AREA;
+        this.cwd = System.getProperty("user.dir");
+        this.saveAccessData = saveAccessData;
+        this.binaryEncoding = binaryEncoding;
+        this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding, utc);
 
         reset();
     }
@@ -171,27 +172,43 @@ public class CoverageAnalysis {
         }
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
+    private Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException{
         return this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, null);
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, String raanLabel) throws OrekitException{
+    private Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, String raanLabel) throws OrekitException{
 
         double raan = 0.0;
 
         if(raanLabel != null){
-            switch (raanLabel){
+            int hour = 0;
+            int minute = 0;
+            double second = 0.0;
+            boolean skip = false;
 
+            switch (raanLabel){
                 case "DD":
+                    hour = 6;
+                    minute = 30;
                     break;
                 case "AM":
+                    hour = 10;
+                    minute = 0;
                     break;
                 case "noon":
+                    hour = 12;
+                    minute = 0;
                     break;
                 case "PM":
+                    hour = 14;
+                    minute = 0;
                     break;
                 default:
-                    break;
+                    skip = true;
+            }
+
+            if(!skip){
+                raan = getRAANForGivenLTANOfSSO(hour, minute, second, altitude, inclination);
             }
         }
 
@@ -208,7 +225,7 @@ public class CoverageAnalysis {
      * @param raan [deg]
      * @throws OrekitException
      */
-    public Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double raan) throws OrekitException{
+    private Map<TopocentricFrame, TimeIntervalArray> computeAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, double raan) throws OrekitException{
 
         long start = System.nanoTime();
 
@@ -322,7 +339,7 @@ public class CoverageAnalysis {
     }
 
     /**
-     *
+     * Computes a rough estimate of RAAN for a given LTAN
      * @param altitude [m]
      * @param inclination [deg]
      * @return
@@ -346,33 +363,53 @@ public class CoverageAnalysis {
         double optRaan = -1;
 
         DateTimeComponents startDateTimeComponents = this.startDate.getComponents(utc);
-        DateComponents startDateComponents = startDateTimeComponents.getDate();
-        DateComponents endDateComponents = startDateComponents;
-        TimeComponents endTimeComponents = new TimeComponents(hour, minute, second);
-        AbsoluteDate tempEndDate = new AbsoluteDate(endDateComponents, endTimeComponents, utc);
 
-        // If the endDate is before the startDate
-        while(tempEndDate.compareTo(this.startDate) < 1){
+        DateComponents startDateComponents = startDateTimeComponents.getDate();
+        TimeComponents startTimeComponents = new TimeComponents(hour, minute, second); // Set the desired LTAN
+
+        AbsoluteDate tempStartDate = new AbsoluteDate(startDateComponents, startTimeComponents, utc);
+        AbsoluteDate tempEndDate = this.startDate;
+
+        // If the start date is not before the end date
+        while(tempStartDate.compareTo(tempEndDate) > -1){
 
             // Shift 1 day
-            tempEndDate = tempEndDate.shiftedBy(24 * 60 * 60);
+            tempStartDate = tempStartDate.shiftedBy( - 24 * 60 * 60);
         }
 
         for(double raan = 0; raan < 360; raan += 0.1){
 
             Orbit SSO = new KeplerianOrbit(Constants.WGS84_EARTH_EQUATORIAL_RADIUS + altitude, 0.0001, FastMath.toRadians(inclination),0.0,
-                    FastMath.toRadians(raan), 0.0, PositionAngle.MEAN, inertialFrame, startDate, mu);
+                    FastMath.toRadians(raan), 0.0, PositionAngle.MEAN, inertialFrame, tempStartDate, mu);
 
             GeodeticPoint p = new GeodeticPoint(0, 0, 0);
             CoveragePoint point=new CoveragePoint(earthShape, p, "");
 
             Vector3D pt1 = SSO.getPVCoordinates().getPosition();
-            Vector3D pt2 = point.getPVCoordinates(startDate, inertialFrame).getPosition();
+            Vector3D pt2 = point.getPVCoordinates(tempStartDate, inertialFrame).getPosition();
             double angle=Vector3D.angle(pt1, pt2);
 
             if(angle < minAngle){
                 minAngle = angle;
-                optRaan = raan;
+
+                if(FastMath.toDegrees(angle) < 0.5){
+                    Properties propertiesPropagator = new Properties();
+                    propertiesPropagator.setProperty("orekit.propagator.mass", "6");
+                    propertiesPropagator.setProperty("orekit.propagator.atmdrag", "true");
+
+                    propertiesPropagator.setProperty("orekit.propagator.dragarea", "0.075");
+                    propertiesPropagator.setProperty("orekit.propagator.dragcoeff", "2.2");
+                    propertiesPropagator.setProperty("orekit.propagator.thirdbody.sun", "true");
+                    propertiesPropagator.setProperty("orekit.propagator.thirdbody.moon", "true");
+                    propertiesPropagator.setProperty("orekit.propagator.solarpressure", "true");
+                    propertiesPropagator.setProperty("orekit.propagator.solararea", "0.058");
+
+                    PropagatorFactory pf=new PropagatorFactory(PropagatorType.NUMERICAL,propertiesPropagator);
+                    Propagator prop=pf.createPropagator(SSO, 0);
+                    SpacecraftState s=prop.propagate(startDate, endDate);
+                    KeplerianOrbit orbit=(KeplerianOrbit)s.getOrbit();
+                    optRaan = orbit.getRightAscensionOfAscendingNode();
+                }
             }
         }
 

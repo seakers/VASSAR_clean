@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.apache.commons.math3.util.FastMath;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import seak.orekit.coverage.analysis.AnalysisMetric;
 import seak.orekit.coverage.analysis.GroundEventAnalyzer;
 import seak.orekit.object.CoveragePoint;
@@ -30,9 +31,11 @@ import seak.orekit.coverage.access.TimeIntervalArray;
 public class CoverageAnalysisIO {
 
     private boolean binaryEncoding;
+    private TimeScale timeScale;
 
-    public CoverageAnalysisIO(boolean binaryEncoding){
+    public CoverageAnalysisIO(boolean binaryEncoding, TimeScale timeScale){
         this.binaryEncoding = binaryEncoding;
+        this.timeScale = timeScale;
     }
 
     public void setBinaryEncoding(boolean binaryEncoding){
@@ -59,9 +62,9 @@ public class CoverageAnalysisIO {
 
 //    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) {
 //
+//        File file = getAccessDataFile(definition);
+//
 //        String line;
-//        List<Double> latitude = new ArrayList<>();
-//        List<Double> longitude = new ArrayList<>();
 //        List<SimpleDateFormat> startTime = new ArrayList<>();
 //        List<AbsoluteDate> stopTime = new ArrayList<>();
 //        List<Double> riseTime = new ArrayList<>();
@@ -69,16 +72,21 @@ public class CoverageAnalysisIO {
 //
 //        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX");
 //
-//        try (BufferedReader br = new BufferedReader(
-//                new FileReader(new File(System.getProperty("test"), "CoverageResults" + ".csv")))) {
+//        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 //
 //            while ((line = br.readLine()) != null) {
 //
 //                String[] entry = line.split(","); // use comma as separator
 //                int columns = entry.length; //get the number of columns in a row
 //
-//                latitude.add(Double.parseDouble(entry[0]));
-//                longitude.add(Double.parseDouble(entry[1]));
+//                double lat = Double.parseDouble(entry[0]);
+//                double lon = Double.parseDouble(entry[1]);
+//
+//                AbsoluteDate head;
+//                AbsoluteDate tail;
+//
+//                TimeIntervalArray timeInterval = new TimeIntervalArray();
+//
 //
 //                for (int i = 0; i < columns; i = i + 2) {
 //                    riseTime.add(Double.parseDouble(entry[i + 4]));
@@ -94,7 +102,6 @@ public class CoverageAnalysisIO {
 //            e.printStackTrace();
 //        }
 //    }
-
 
     public void writeAccessDataCSV(AccessDataDefinition definition, Map<TopocentricFrame, TimeIntervalArray> fovEvents){
 
@@ -150,8 +157,9 @@ public class CoverageAnalysisIO {
             String[] entry = new String[4 + riseSetTimesSize];
             entry[0] = String.valueOf(FastMath.toDegrees(point.getPoint().getLatitude()));
             entry[1] = String.valueOf(FastMath.toDegrees(point.getPoint().getLongitude()));
-            entry[2] = String.valueOf(fovEventAnalyzer.getStartDate());
-            entry[3] = String.valueOf(fovEventAnalyzer.getEndDate());
+
+            entry[2] = String.valueOf(fovEventAnalyzer.getStartDate()); // Start date
+            entry[3] = String.valueOf(fovEventAnalyzer.getEndDate()); // End date
 
             if (riseSetTimesSize == 0) {
                 return String.join(",", entry);
