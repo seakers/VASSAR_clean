@@ -120,11 +120,12 @@ public class Params {
     public int numPanels;
     public ArrayList<Double> panelWeights;
     public ArrayList<String> panelNames;
+    public HashMap<String, String> panelDescriptions;
     public ArrayList<ArrayList<Double>> objWeights;
     public ArrayList<ArrayList<String>> objNames;
+    public HashMap<String, String> objectiveDescriptions;
     public ArrayList<Integer> numObjectivesPerPanel;
     public ArrayList<ArrayList<ArrayList<Double>>> subobjWeights;
-    public HashMap<String, String> objectiveDescriptions;
     public HashMap<String, String> subobjDescriptions;
     public HashMap<String, Double> subobjWeightsMap;
 

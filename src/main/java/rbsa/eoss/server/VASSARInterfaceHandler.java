@@ -37,6 +37,7 @@ import org.moeaframework.util.TypedProperties;
 import rbsa.eoss.*;
 import rbsa.eoss.javaInterface.BinaryInputArchitecture;
 import rbsa.eoss.javaInterface.ObjectiveSatisfaction;
+import rbsa.eoss.javaInterface.SubscoreInformation;
 import rbsa.eoss.javaInterface.VASSARInterface;
 import rbsa.eoss.local.Params;
 import seak.architecture.operators.IntegerUM;
@@ -385,6 +386,52 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         ArchitectureEvaluator.getInstance().clear();
         pool.shutdown();
         System.out.println("DONE");
+    }
+
+    @Override
+    public List<SubscoreInformation> getArchScienceInformation(BinaryInputArchitecture arch) {
+        List<SubscoreInformation> information = new ArrayList<>();
+
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+        for (int i = 0; i < params.panelNames.size(); ++i) {
+            List<SubscoreInformation> objectivesInformation = new ArrayList<>();
+            for (int j = 0; j < params.objNames.get(i).size(); ++j) {
+                List<SubscoreInformation> subobjectivesInformation = new ArrayList<>();
+                for (int k = 0; k < params.subobjectives.get(i).get(j).size(); ++k) {
+                    String subobjName = params.subobjectives.get(i).get(j).get(k);
+                    subobjectivesInformation.add(new SubscoreInformation(
+                            subobjName,
+                            params.subobjDescriptions.get(subobjName),
+                            result.getSubobjectiveScores().get(i).get(j).get(k),
+                            params.subobjWeights.get(i).get(j).get(k),
+                            null));
+                }
+                String objName = params.objNames.get(i).get(j);
+                objectivesInformation.add(new SubscoreInformation(
+                        objName,
+                        params.objectiveDescriptions.get(objName),
+                        result.getObjectiveScores().get(i).get(j),
+                        params.objWeights.get(i).get(j),
+                        subobjectivesInformation));
+            }
+            String panelName = params.panelNames.get(i);
+            information.add(new SubscoreInformation(
+                    panelName,
+                    params.panelDescriptions.get(panelName),
+                    result.getPanelScores().get(i),
+                    params.panelWeights.get(i),
+                    objectivesInformation));
+        }
+
+        return information;
     }
 }
 

@@ -51,6 +51,14 @@ struct ObjectiveSatisfaction {
   3: double weight
 }
 
+struct SubscoreInformation {
+  1: string name,
+  2: string description,
+  3: double value,
+  4: double weight,
+  5: list<SubscoreInformation> subscores
+}
+
 
 service VASSARInterface {
 
@@ -85,7 +93,9 @@ service VASSARInterface {
 
    list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective),
 
-   oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username)
+   oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username),
+
+   list<SubscoreInformation> getArchScienceInformation(1: BinaryInputArchitecture arch)
 }
 
 
