@@ -40,62 +40,71 @@ typedef i32 int
  
  
 struct BinaryInputArchitecture {
-  1: int id,
-  2: list<bool> inputs,
-  3: list<double> outputs
+    1: int id,
+    2: list<bool> inputs,
+    3: list<double> outputs
 }
 
 struct ObjectiveSatisfaction {
-  1: string objective_name,
-  2: double satisfaction,
-  3: double weight
+    1: string objective_name,
+    2: double satisfaction,
+    3: double weight
 }
 
 struct SubscoreInformation {
-  1: string name,
-  2: string description,
-  3: double value,
-  4: double weight,
-  5: list<SubscoreInformation> subscores
+    1: string name,
+    2: string description,
+    3: double value,
+    4: double weight,
+    5: list<SubscoreInformation> subscores
+}
+
+struct MissionCostInformation {
+    1: string orbit_name,
+    2: string launch_vehicle,
+    3: map<string, double> mass_budget,
+    4: map<string, double> power_budget
 }
 
 
 service VASSARInterface {
 
-  /**
-   * A method definition looks like C code. It has a return type, arguments,
-   * and optionally a list of exceptions that it may throw. Note that argument
-   * lists and exception lists are specified using the exact same syntax as
-   * field lists in struct or exception definitions.
-   */
+    /**
+    * A method definition looks like C code. It has a return type, arguments,
+    * and optionally a list of exceptions that it may throw. Note that argument
+    * lists and exception lists are specified using the exact same syntax as
+    * field lists in struct or exception definitions.
+    */
 
-   void ping(),
-   
-   BinaryInputArchitecture eval(1:list<bool> inputs),
+    void ping(),
 
-   list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs),
-   
-   list<string> getOrbitList(),
-   
-   list<string> getInstrumentList(),
+    BinaryInputArchitecture eval(1:list<bool> inputs),
 
-   list<string> getObjectiveList(),
+    list<BinaryInputArchitecture> runLocalSearch(1:list<bool> inputs),
 
-   list<string> getInstrumentsForObjective(1:string objective),
+    list<string> getOrbitList(),
 
-   list<string> getInstrumentsForPanel(1:string panel),
+    list<string> getInstrumentList(),
 
-   list<string> getCritique(1:list<bool> inputs),
+    list<string> getObjectiveList(),
 
-   list<ObjectiveSatisfaction> getArchitectureScoreExplanation(1:list<bool> arch),
+    list<string> getInstrumentsForObjective(1:string objective),
 
-   list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel),
+    list<string> getInstrumentsForPanel(1:string panel),
 
-   list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective),
+    list<string> getCritique(1:list<bool> inputs),
 
-   oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username),
+    list<ObjectiveSatisfaction> getArchitectureScoreExplanation(1:list<bool> arch),
 
-   list<SubscoreInformation> getArchScienceInformation(1: BinaryInputArchitecture arch)
+    list<ObjectiveSatisfaction> getPanelScoreExplanation(1:list<bool> arch, 2:string panel),
+
+    list<ObjectiveSatisfaction> getObjectiveScoreExplanation(1:list<bool> arch, 2:string objective),
+
+    oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username),
+
+    list<SubscoreInformation> getArchScienceInformation(1: BinaryInputArchitecture arch),
+
+    list<MissionCostInformation> getArchMissionCostInformation(1: BinaryInputArchitecture arch)
 }
 
 

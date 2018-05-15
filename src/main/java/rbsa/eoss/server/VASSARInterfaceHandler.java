@@ -26,6 +26,8 @@ import java.util.concurrent.*;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
+import jess.Fact;
+import jess.JessException;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -35,10 +37,7 @@ import org.moeaframework.core.operator.binary.BitFlip;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.util.TypedProperties;
 import rbsa.eoss.*;
-import rbsa.eoss.javaInterface.BinaryInputArchitecture;
-import rbsa.eoss.javaInterface.ObjectiveSatisfaction;
-import rbsa.eoss.javaInterface.SubscoreInformation;
-import rbsa.eoss.javaInterface.VASSARInterface;
+import rbsa.eoss.javaInterface.*;
 import rbsa.eoss.local.Params;
 import seak.architecture.operators.IntegerUM;
 
@@ -429,6 +428,53 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                     result.getPanelScores().get(i),
                     params.panelWeights.get(i),
                     objectivesInformation));
+        }
+
+        return information;
+    }
+
+    @Override
+    public List<MissionCostInformation> getArchMissionCostInformation(BinaryInputArchitecture arch) {
+        List<MissionCostInformation> information = new ArrayList<>();
+
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+
+        // Auxiliary arrays
+        String[] massBudgetSlots = { "adapter-mass", "propulsion-mass#", "structure-mass#", "avionics-mass#",
+                "ADCS-mass#", "EPS-mass#", "propellant-mass-injection", "propellant-mass-ADCS", "thermal-mass#",
+                "payload-mass#" };
+        String[] powerBudgetSlots = { "payload-peak-power#", "satellite-BOL-power#" };
+        for (Fact costFact: result.getCostFacts()) {
+            try {
+                String missionName = costFact.getSlotValue("Name").stringValue(null);
+                String launchVehicle = costFact.getSlotValue("launch-vehicle").stringValue(null);
+                HashMap<String, Double> massBudget = new HashMap<>();
+                for (String massSlot: massBudgetSlots) {
+                    Double value = costFact.getSlotValue(massSlot).floatValue(null);
+                    massBudget.put(massSlot, value);
+                }
+                HashMap<String, Double> powerBudget = new HashMap<>();
+                for (String powerSlot: powerBudgetSlots) {
+                    Double value = costFact.getSlotValue(powerSlot).floatValue(null);
+                    powerBudget.put(powerSlot, value);
+                }
+                information.add(new MissionCostInformation(
+                        missionName,
+                        launchVehicle,
+                        massBudget,
+                        powerBudget));
+            }
+            catch (JessException e) {
+                System.err.println(e.toString());
+            }
         }
 
         return information;
