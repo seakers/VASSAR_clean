@@ -84,13 +84,14 @@ public class CoverageAnalysis {
         ConsoleHandler handler = new ConsoleHandler();
         handler.setLevel(level);
         Logger.getGlobal().addHandler(handler);
+        this.cwd = System.getProperty("user.dir");
 
         //if running on a non-US machine, need the line below
         Locale.setDefault(new Locale("en", "US"));
 
         // Load default dataset saved in the project root directory
         StringBuffer pathBuffer = new StringBuffer();
-
+        
         final File currrentDir = new File(this.cwd);
         if (currrentDir.exists() && (currrentDir.isDirectory() || currrentDir.getName().endsWith(".zip"))) {
             pathBuffer.append(currrentDir.getAbsolutePath());
@@ -106,8 +107,7 @@ public class CoverageAnalysis {
 
         this.numThreads = numThreads;
         this.coverageGridGranularity = coverageGridGranularity;
-        this.gridStyle = EQUAL_AREA;
-        this.cwd = System.getProperty("user.dir");
+        this.gridStyle = EQUAL_AREA; 
         this.saveAccessData = saveAccessData;
         this.binaryEncoding = binaryEncoding;
         this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding, utc);

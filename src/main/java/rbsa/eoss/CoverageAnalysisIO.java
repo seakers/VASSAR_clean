@@ -1,26 +1,31 @@
 package rbsa.eoss;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.math3.util.FastMath;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import seak.orekit.coverage.analysis.AnalysisMetric;
 import seak.orekit.coverage.analysis.GroundEventAnalyzer;
 import seak.orekit.object.CoveragePoint;
 import java.io.*;
+import java.text.SimpleDateFormat;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TTScale;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import seak.orekit.coverage.access.TimeIntervalArray;
 
 /**
@@ -60,49 +65,62 @@ public class CoverageAnalysisIO {
         return this.readAccessDataBinary(definition);
     }
 
-//    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) {
-//
-//        File file = getAccessDataFile(definition);
-//
-//        String line;
-//        List<SimpleDateFormat> startTime = new ArrayList<>();
-//        List<AbsoluteDate> stopTime = new ArrayList<>();
-//        List<Double> riseTime = new ArrayList<>();
-//        List<Double> setTime = new ArrayList<>();
-//
-//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSX");
-//
-//        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-//
-//            while ((line = br.readLine()) != null) {
-//
-//                String[] entry = line.split(","); // use comma as separator
-//                int columns = entry.length; //get the number of columns in a row
-//
-//                double lat = Double.parseDouble(entry[0]);
-//                double lon = Double.parseDouble(entry[1]);
-//
-//                AbsoluteDate head;
-//                AbsoluteDate tail;
-//
-//                TimeIntervalArray timeInterval = new TimeIntervalArray();
-//
-//
-//                for (int i = 0; i < columns; i = i + 2) {
-//                    riseTime.add(Double.parseDouble(entry[i + 4]));
-//                    setTime.add(Double.parseDouble(entry[i + 5]));
-//                }
-//            }
-//
-//            br.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) throws OrekitException {
 
+        File file = getAccessDataFile(definition);
+
+        Map<TopocentricFrame, TimeIntervalArray> out = new HashMap<>();
+            
+        String line;
+        List<SimpleDateFormat> startTime = new ArrayList<>();
+        List<AbsoluteDate> stopTime = new ArrayList<>();
+        List<Double> riseTime = new ArrayList<>();
+        List<Double> setTime = new ArrayList<>();
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+            while ((line = br.readLine()) != null) {
+
+                String[] entry = line.split(","); // use comma as separator
+                int columns = entry.length; //get the number of columns in a row
+
+                double lat = Double.parseDouble(entry[0]);
+                double lon = Double.parseDouble(entry[1]);
+
+                GeodeticPoint geoPoint = new GeodeticPoint(lat, lon, 0.0);
+                
+                //using a default body frame since we are simulating earth
+                //must use IERS_2003 and EME2000 frames to be consistent with STK
+                Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2003, true);
+                BodyShape earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                        Constants.WGS84_EARTH_FLATTENING, earthFrame);
+                
+                TopocentricFrame topos = new TopocentricFrame(earthShape, geoPoint, String.valueOf(definition.hashCode()));
+                AbsoluteDate head = new AbsoluteDate(entry[2], timeScale);
+                AbsoluteDate tail = new AbsoluteDate(entry[3], timeScale);
+
+                TimeIntervalArray timeInterval = new TimeIntervalArray(head, tail);
+                
+                for (int i = 0; i < columns; i = i + 2) {
+                    timeInterval.addRiseTime(Double.parseDouble(entry[i + 4]));
+                    timeInterval.addSetTime(Double.parseDouble(entry[i + 5]));
+                }
+                
+                out.put(topos, timeInterval);
+            }
+
+            br.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (OrekitException e) {
+            e.printStackTrace();
+        }
+        return out;
+    } 
+    
     public void writeAccessDataCSV(AccessDataDefinition definition, Map<TopocentricFrame, TimeIntervalArray> fovEvents){
 
         File file = getAccessDataFile(definition);
