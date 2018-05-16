@@ -434,7 +434,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
     }
 
     @Override
-    public List<MissionCostInformation> getArchMissionCostInformation(BinaryInputArchitecture arch) {
+    public List<MissionCostInformation> getArchCostInformation(BinaryInputArchitecture arch) {
         List<MissionCostInformation> information = new ArrayList<>();
 
         String bitString = "";
@@ -452,6 +452,9 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 "ADCS-mass#", "EPS-mass#", "propellant-mass-injection", "propellant-mass-ADCS", "thermal-mass#",
                 "payload-mass#" };
         String[] powerBudgetSlots = { "payload-peak-power#", "satellite-BOL-power#" };
+        String[] costBudgetSlots = { "payload-cost#", "bus-cost#", "launch-cost#", "program-cost#",
+                "IAT-cost#", "operations-cost#" };
+        double[] costMultipliers = { 1e-3, 1e-3, 1.0, 1e-3, 1e-3, 1e-3 };
         for (Fact costFact: result.getCostFacts()) {
             try {
                 String missionName = costFact.getSlotValue("Name").stringValue(null);
@@ -466,11 +469,23 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                     Double value = costFact.getSlotValue(powerSlot).floatValue(null);
                     powerBudget.put(powerSlot, value);
                 }
+                HashMap<String, Double> costBudget = new HashMap<>();
+                Double sumCost = 0.0;
+                for (int i = 0; i < costBudgetSlots.length; ++i) {
+                    String costSlot = costBudgetSlots[i];
+                    Double multiplier = costMultipliers[i];
+                    Double value = costFact.getSlotValue(costSlot).floatValue(null);
+                    sumCost += value*multiplier;
+                    costBudget.put(costSlot, value*multiplier);
+                }
+                Double totalCost = costFact.getSlotValue("mission-cost#").floatValue(null);
+                costBudget.put("others", totalCost - sumCost);
                 information.add(new MissionCostInformation(
                         missionName,
                         launchVehicle,
                         massBudget,
-                        powerBudget));
+                        powerBudget,
+                        costBudget));
             }
             catch (JessException e) {
                 System.err.println(e.toString());

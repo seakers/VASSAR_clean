@@ -63,7 +63,8 @@ struct MissionCostInformation {
     1: string orbit_name,
     2: string launch_vehicle,
     3: map<string, double> mass_budget,
-    4: map<string, double> power_budget
+    4: map<string, double> power_budget,
+    5: map<string, double> cost_budget
 }
 
 
@@ -104,7 +105,7 @@ service VASSARInterface {
 
     list<SubscoreInformation> getArchScienceInformation(1: BinaryInputArchitecture arch),
 
-    list<MissionCostInformation> getArchMissionCostInformation(1: BinaryInputArchitecture arch)
+    list<MissionCostInformation> getArchCostInformation(1: BinaryInputArchitecture arch)
 }
 
 
