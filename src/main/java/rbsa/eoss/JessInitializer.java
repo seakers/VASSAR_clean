@@ -715,7 +715,7 @@ public class JessInitializer {
                         params.nof++;
                         String rhs0 = ") => (bind ?reason \"\") (bind ?new-reasons (create$ "  + StringUtils.repeat("N-A ",numAttrib) + "))";
                         reqRule = lhs + rhs0 + rhs + rhs2 + ")) (assert (AGGREGATION::SUBOBJECTIVE (id " + currentSubobj + ") (attributes " + attribs + ") (index " + index + ") (parent " + parent + " ) (attrib-scores ?list) (satisfaction (*$ ?list)) (reasons ?new-reasons) (satisfied-by ?whom) (reason ?reason )"
-                                + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?m getFactId) \"}\"))"
+                                + " (requirement-id (?m getFactId)) " + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?m getFactId) \"}\"))"
                                 + "))";
                         reqRule += ")";
                         params.requirementRules.put(currentSubobj, subobjTests);
@@ -789,11 +789,11 @@ public class JessInitializer {
             String parent = tokens[0];
             String index = tokens[1];
             call2 += " (AGGREGATION::SUBOBJECTIVE (satisfaction 0.0) (id " + currentSubobj + ") (index " + index + ") (parent " + parent + ") (reasons (create$ " + StringUtils.repeat("N-A ",numAttrib) + " ))"
-                    + "(factHistory F" + params.nof + ")) ";
+                    + " (requirement-id -1) (factHistory F" + params.nof + ")) ";
             params.nof++;
             String rhs0 = ") => (bind ?reason \"\") (bind ?new-reasons (create$ "  + StringUtils.repeat("N-A ",numAttrib) + "))";
             reqRule = lhs + rhs0 + rhs + rhs2 + ")) (assert (AGGREGATION::SUBOBJECTIVE (id " + currentSubobj + ") (attributes " + attribs + ") (index " + index + ") (parent " + parent + " ) (attrib-scores ?list) (satisfaction (*$ ?list)) (reasons ?new-reasons) (satisfied-by ?whom) (reason ?reason )"
-                    + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?m getFactId) \"}\"))"
+                    + " (requirement-id (?m getFactId)) " + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?m getFactId) \"}\"))"
                     + "))";
             reqRule += ")";
 

@@ -67,6 +67,15 @@ struct MissionCostInformation {
     5: map<string, double> cost_budget
 }
 
+struct SubobjectiveDetails {
+    1: string param,
+    2: list<string> attr_names,
+    3: list<list<string>> attr_values,
+    4: list<double> scores,
+    5: list<string> taken_by,
+    6: list<list<string>> justifications
+}
+
 
 service VASSARInterface {
 
@@ -103,9 +112,11 @@ service VASSARInterface {
 
     oneway void startGA(1:list<BinaryInputArchitecture> dataset, 2:string username),
 
-    list<SubscoreInformation> getArchScienceInformation(1: BinaryInputArchitecture arch),
+    list<SubscoreInformation> getArchScienceInformation(1:BinaryInputArchitecture arch),
 
-    list<MissionCostInformation> getArchCostInformation(1: BinaryInputArchitecture arch)
+    list<MissionCostInformation> getArchCostInformation(1:BinaryInputArchitecture arch),
+
+    SubobjectiveDetails getSubscoreDetails(1:BinaryInputArchitecture arch, 2:string subobj)
 }
 
 

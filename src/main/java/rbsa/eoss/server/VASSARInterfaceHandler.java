@@ -28,6 +28,8 @@ import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
 import jess.Fact;
 import jess.JessException;
+import jess.Value;
+import jess.ValueVector;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -493,6 +495,84 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         }
 
         return information;
+    }
+
+    @Override
+    public SubobjectiveDetails getSubscoreDetails(BinaryInputArchitecture arch, String subobj) {
+        // Get a result with all the important facts
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+
+
+        String parameter = params.subobjectivesToMeasurements.get(subobj);
+
+        // Obtain list of attributes for this parameter
+        ArrayList<String> attrNames = new ArrayList<>();
+        HashMap<String, ArrayList<String>> requirementRules = params.requirementRules.get(subobj);
+        attrNames.addAll(requirementRules.keySet());
+
+        // Loop to get rows of details for each data product
+        ArrayList<List<String>> attrValues = new ArrayList<>();
+        ArrayList<Double> scores = new ArrayList<>();
+        ArrayList<String> takenBy = new ArrayList<>();
+        ArrayList<List<String>> justifications = new ArrayList<>();
+        for (Fact explanation: result.getExplanations().get(subobj)) {
+            try {
+                // Try to find the requirement fact!
+                int measurementId = explanation.getSlotValue("requirement-id").intValue(null);
+                if (measurementId == -1) {
+                    continue;
+                }
+                Fact measurement = null;
+                for (Fact capability: result.getCapabilities()) {
+                    if (capability.getFactId() == measurementId) {
+                        measurement = capability;
+                        break;
+                    }
+                }
+                // Start by putting all attribute values into list
+                ArrayList<String> rowValues = new ArrayList<>();
+                for (String attrName: attrNames) {
+                    // Check type and convert to String if needed
+                    Value attrValue = measurement.getSlotValue(attrName);
+                    rowValues.add(attrValue.toString());
+                }
+                // Get information from explanation fact
+                Double score = explanation.getSlotValue("satisfaction").floatValue(null);
+                String satisfiedBy = explanation.getSlotValue("satisfied-by").stringValue(null);
+                ArrayList<String> rowJustifications = new ArrayList<>();
+                ValueVector reasons = explanation.getSlotValue("reasons").listValue(null);
+                for (int i = 0; i < reasons.size(); ++i) {
+                    String reason = reasons.get(i).stringValue(null);
+                    if (!reason.equals("N-A")) {
+                        rowJustifications.add(reason);
+                    }
+                }
+
+                // Put everything in their lists
+                attrValues.add(rowValues);
+                scores.add(score);
+                takenBy.add(satisfiedBy);
+                justifications.add(rowJustifications);
+            }
+            catch (JessException e) {
+                System.err.println(e.toString());
+            }
+        }
+
+        return new SubobjectiveDetails(
+                parameter,
+                attrNames,
+                attrValues,
+                scores,
+                takenBy,
+                justifications);
     }
 }
 
