@@ -7,3 +7,5 @@ nbproject/
 /target/
 /out/
 *.iml
+.gradle
+

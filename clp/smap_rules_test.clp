@@ -127,7 +127,7 @@
          (return (contains$ (rest$ ?list) ?elem)))    
     )
 
-(defrule MANIFEST::SMAP-add-common-dish-to-MWR
+(defrule MANIFEST0::SMAP-add-common-dish-to-MWR
     "If we manifest the SMAP radar, radiometer, or both, then we need to 
     manifest the share dish"
     (declare (salience 100))
@@ -142,7 +142,7 @@
     
     ) 
 
-(defrule MANIFEST::SMAP-add-common-dish-to-RAD
+(defrule MANIFEST0::SMAP-add-common-dish-to-RAD
     "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
@@ -238,10 +238,8 @@
 (defrule CAPABILITIES::compute-image-distortion-in-side-looking-instruments
     "Computes image distortion for side-looking instruments"
     ?instr <- (CAPABILITIES::Manifested-instrument (orbit-altitude# ?h&~nil) 
-        (Geometry slant)  (characteristic-orbit ?orb&~nil) (image-distortion# nil))
+        (Geometry slant) (characteristic-orbit ?href&~nil) (image-distortion# nil))
     =>
-    (bind ?href (get-orbit-altitude ?orb))
-    
     (modify ?instr (image-distortion# (/ ?h ?href))) 
         
     )
