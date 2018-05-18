@@ -152,7 +152,7 @@ public class CoverageAnalysis {
         this.reset();
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException {
+    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, String raanLabel) throws OrekitException {
 
         CoverageAnalysisIO.AccessDataDefinition definition = new CoverageAnalysisIO.AccessDataDefinition(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
 
@@ -163,7 +163,7 @@ public class CoverageAnalysis {
 
         }else{
             // Newly compute the accesses
-            Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+            Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
 
             if(this.saveAccessData){
                 this.coverageAnalysisIO.writeAccessData(definition, fovEvents);

@@ -148,7 +148,9 @@ public class GenericTask implements Callable {
                         int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
                         int numPlanes = Integer.parseInt(orb.getNplanes());
 
-                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                        String raanLabel = orb.getRaan();
+
+                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
                         fieldOfViewEvents.add(accesses);
                     }
 
@@ -160,7 +162,7 @@ public class GenericTask implements Callable {
                         mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
                     }
 
-                    Double therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds);
+                    Double therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds)/3600;
 
                     String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
                             + "(avg-revisit-time-global# " + therevtimes + ") "
