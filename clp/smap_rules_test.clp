@@ -127,7 +127,7 @@
          (return (contains$ (rest$ ?list) ?elem)))    
     )
 
-(defrule MANIFEST::SMAP-add-common-dish-to-MWR
+(defrule MANIFEST0::SMAP-add-common-dish-to-MWR
     "If we manifest the SMAP radar, radiometer, or both, then we need to 
     manifest the share dish"
     (declare (salience 100))
@@ -142,7 +142,7 @@
     
     ) 
 
-(defrule MANIFEST::SMAP-add-common-dish-to-RAD
+(defrule MANIFEST0::SMAP-add-common-dish-to-RAD
     "If we manifest the SMAP radar, radiometer, or both, then we need to manifest the share dish"
 	(declare (salience 100))
     ?miss <- (MANIFEST::Mission (instruments $?list-of-instruments))
