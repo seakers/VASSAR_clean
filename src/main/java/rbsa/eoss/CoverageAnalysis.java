@@ -88,6 +88,8 @@ public class CoverageAnalysis {
         //if running on a non-US machine, need the line below
         Locale.setDefault(new Locale("en", "US"));
 
+        this.cwd = System.getProperty("user.dir");
+
         // Load default dataset saved in the project root directory
         StringBuffer pathBuffer = new StringBuffer();
 
@@ -107,7 +109,6 @@ public class CoverageAnalysis {
         this.numThreads = numThreads;
         this.coverageGridGranularity = coverageGridGranularity;
         this.gridStyle = EQUAL_AREA;
-        this.cwd = System.getProperty("user.dir");
         this.saveAccessData = saveAccessData;
         this.binaryEncoding = binaryEncoding;
         this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding, utc);
