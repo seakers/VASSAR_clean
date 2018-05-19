@@ -115,54 +115,106 @@ public class GenericTask implements Callable {
             r.run();
 
             int javaAssertedFactID = 1;
-            int coverageGranularity = 20;
 
-            //Revisit times
-            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, false);
-            double[] latBounds = new double[]{FastMath.toRadians(-70), FastMath.toRadians(70)};
-            double[] lonBounds = new double[]{FastMath.toRadians(-180), FastMath.toRadians(180)};
+            // Check if all of the orbits in the original formulation are used
+            int[] precompIndex = new int[params.orbitList.length];
+            String[] precompList = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-AM","SSO-800-SSO-DD"};
 
-            for(String param: params.measurementsToInstruments.keySet()){
+            for(int i = 0; i < params.orbitList.length; i++){
+                String orb = params.orbitList[i];
+                int matchedIndex = -1;
+                for(int j = 0; j < precompList.length; j++){
+                    if(precompList[j].equalsIgnoreCase(orb)){
+                        matchedIndex = j;
+                        break;
+                    }
+                }
 
-                // Get FOVs of the sensors in each orbit
+                // Assign -1 if unmatched. Otherwise, assign the corresponding index
+                precompIndex[i] = matchedIndex;
+            }
+
+            for (String param: params.measurementsToInstruments.keySet()) {
                 Value v = r.eval("(update-fovs " + param + " (create$ " + m.stringArraytoStringWithSpaces(params.orbitList) + "))");
 
                 if (RU.getTypeName(v.type()).equalsIgnoreCase("LIST")) {
 
                     ValueVector thefovs = v.listValue(r.getGlobalContext());
-                    List<Map<TopocentricFrame, TimeIntervalArray>> fieldOfViewEvents = new ArrayList<>();
+                    String[] fovs = new String[thefovs.size()];
+                    for (int i = 0; i < thefovs.size(); i++) {
+                        int tmp = thefovs.get(i).intValue(r.getGlobalContext());
+                        fovs[i] = String.valueOf(tmp);
+                    }
 
-                    // For each fieldOfview-orbit combination
-                    for(int i = 0; i < this.orbits.size(); i++){
-                        Orbit orb = this.orbits.get(i);
-                        int fov = thefovs.get(this.params.orbitIndexes.get(orb.toString())).intValue(r.getGlobalContext());
+                    boolean recalculateRevisitTime = false;
+                    for(int i = 0; i < fovs.length; i++){
+                        if(precompIndex[i] == -1){
+                            // If there exists a single orbit that is different from pre-calculated ones, re-calculate
+                            recalculateRevisitTime = true;
+                        }
+                    }
 
-                        if(fov <= 0){
-                            continue;
+                    Double therevtimes;
+
+                    if(recalculateRevisitTime){
+                        // Do the re-calculation of the revisit times
+
+                        int coverageGranularity = 20;
+
+                        //Revisit times
+                        CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, true);
+                        double[] latBounds = new double[]{FastMath.toRadians(-90), FastMath.toRadians(90)};
+                        double[] lonBounds = new double[]{FastMath.toRadians(-180), FastMath.toRadians(180)};
+
+                        List<Map<TopocentricFrame, TimeIntervalArray>> fieldOfViewEvents = new ArrayList<>();
+
+                        // For each fieldOfview-orbit combination
+                        for(int i = 0; i < this.orbits.size(); i++){
+                            Orbit orb = this.orbits.get(i);
+                            int fov = thefovs.get(this.params.orbitIndexes.get(orb.toString())).intValue(r.getGlobalContext());
+
+                            if(fov <= 0){
+                                continue;
+                            }
+
+                            double fieldOfView = fov; // [deg]
+                            double inclination = orb.getInclinationNum(); // [deg]
+                            double altitude = orb.getAltitudeNum(); // [m]
+                            String raanLabel = orb.getRaan();
+
+                            int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
+                            int numPlanes = Integer.parseInt(orb.getNplanes());
+
+                            Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
+                            fieldOfViewEvents.add(accesses);
                         }
 
-                        double fieldOfView = fov; // [deg]
-                        double inclination = orb.getInclinationNum(); // [deg]
-                        double altitude = orb.getAltitudeNum(); // [m]
+                        // Merge accesses to get the revisit time
+                        Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>(fieldOfViewEvents.get(0));
 
-                        int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
-                        int numPlanes = Integer.parseInt(orb.getNplanes());
+                        for(int i = 1; i < fieldOfViewEvents.size(); ++i) {
+                            Map<TopocentricFrame, TimeIntervalArray> event = fieldOfViewEvents.get(i);
+                            mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
+                        }
 
-                        String raanLabel = orb.getRaan();
+                        therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds)/3600;
 
-                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
-                        fieldOfViewEvents.add(accesses);
+                    }else{
+
+                        // Re-assign fovs based on the original orbit formulation, if the number of orbits is less than 5
+                        if (thefovs.size() < 5) {
+                            String[] new_fovs = new String[5];
+                            for (int i = 0; i < 5; i++) {
+                                new_fovs[i] = fovs[precompIndex[i]];
+                            }
+                            fovs = new_fovs;
+                        }
+
+                        //String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
+                        String key = m.stringArraytoStringWith(fovs, "  ");
+                        therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
+
                     }
-
-                    // Merge accesses to get the revisit time
-                    Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>(fieldOfViewEvents.get(0));
-
-                    for(int i = 1; i < fieldOfViewEvents.size(); ++i) {
-                        Map<TopocentricFrame, TimeIntervalArray> event = fieldOfViewEvents.get(i);
-                        mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
-                    }
-
-                    Double therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds)/3600;
 
                     String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
                             + "(avg-revisit-time-global# " + therevtimes + ") "
@@ -172,59 +224,6 @@ public class GenericTask implements Callable {
                     r.eval(call);
                 }
             }
-
-//            // Check if all of the orbits in the original formulation are used
-//            boolean[] orbitsUsed = new boolean[5];
-//            String[] list = {"LEO-600-polar-NA","SSO-600-SSO-AM","SSO-600-SSO-DD","SSO-800-SSO-AM","SSO-800-SSO-DD"};
-//            for (int i = 0; i < list.length; i++) {
-//                orbitsUsed[i] = false;
-//                for (String orb: params.orbitList) {
-//                    if (list[i].equalsIgnoreCase(orb)) {
-//                        orbitsUsed[i] = true;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            for (String param: params.measurementsToInstruments.keySet()) {
-//
-//                Value v = r.eval("(update-fovs " + param + " (create$ " + m.stringArraytoStringWithSpaces(params.orbitList) + "))");
-//                if (RU.getTypeName(v.type()).equalsIgnoreCase("LIST")) {
-//                    ValueVector thefovs = v.listValue(r.getGlobalContext());
-//                    String[] fovs = new String[thefovs.size()];
-//                    for (int i = 0; i < thefovs.size(); i++) {
-//                        int tmp = thefovs.get(i).intValue(r.getGlobalContext());
-//                        fovs[i] = String.valueOf(tmp);
-//                    }
-//
-//                    // Re-assign fovs based on the original orbit formulation
-//                    if (thefovs.size() < 5) {
-//                        String[] new_fovs = new String[5];
-//                        int cnt = 0;
-//                        for (int i = 0; i < 5; i++) {
-//                            if (orbitsUsed[i]) {
-//                                new_fovs[i] = fovs[cnt];
-//                                cnt++;
-//                            }
-//                            else {
-//                                new_fovs[i] = "-1";
-//                            }
-//                        }
-//                        fovs = new_fovs;
-//                    }
-//
-//                    //String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
-//                    String key = m.stringArraytoStringWith(fovs, "  ");
-//
-//                    Double therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
-//                    String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
-//                            + "(avg-revisit-time-global# " + therevtimes + ") "
-//                            + "(avg-revisit-time-US# " + therevtimes + ")"
-//                            + "(factHistory J" + javaAssertedFactID + ")))";
-//                    javaAssertedFactID++;
-//                    r.eval(call);
-//                }
-//            }
 
             r.setFocus("ASSIMILATION2");
             r.run();

@@ -31,7 +31,10 @@ public class EvaluationTest {
         testArch = new Architecture(map, 1);
 
         AE.init(1);
-        AE.evaluateArchitecture(testArch, "Slow");
+        Result resu = AE.evaluateArchitecture(testArch, "Slow");
+
+        System.out.println(resu.getScience());
+        System.out.println(resu.getCost());
 
         System.out.println("DONE");
     }
