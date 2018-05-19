@@ -62,9 +62,12 @@ struct SubscoreInformation {
 struct MissionCostInformation {
     1: string orbit_name,
     2: string launch_vehicle,
-    3: map<string, double> mass_budget,
-    4: map<string, double> power_budget,
-    5: map<string, double> cost_budget
+    3: double total_mass,
+    4: double total_power,
+    5: double total_cost,
+    6: map<string, double> mass_budget,
+    7: map<string, double> power_budget,
+    8: map<string, double> cost_budget
 }
 
 struct SubobjectiveDetails {

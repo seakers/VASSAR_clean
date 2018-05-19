@@ -467,8 +467,10 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                     massBudget.put(massSlot, value);
                 }
                 HashMap<String, Double> powerBudget = new HashMap<>();
+                Double totalPower = 0.0;
                 for (String powerSlot: powerBudgetSlots) {
                     Double value = costFact.getSlotValue(powerSlot).floatValue(null);
+                    totalPower += value;
                     powerBudget.put(powerSlot, value);
                 }
                 HashMap<String, Double> costBudget = new HashMap<>();
@@ -482,9 +484,13 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 }
                 Double totalCost = costFact.getSlotValue("mission-cost#").floatValue(null);
                 costBudget.put("others", totalCost - sumCost);
+                Double totalMass = costFact.getSlotValue("satellite-launch-mass").floatValue(null);
                 information.add(new MissionCostInformation(
                         missionName,
                         launchVehicle,
+                        totalMass,
+                        totalPower,
+                        totalCost,
                         massBudget,
                         powerBudget,
                         costBudget));
