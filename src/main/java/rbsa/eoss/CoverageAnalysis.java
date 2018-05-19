@@ -155,7 +155,7 @@ public class CoverageAnalysis {
 
     public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, String raanLabel) throws OrekitException {
 
-        CoverageAnalysisIO.AccessDataDefinition definition = new CoverageAnalysisIO.AccessDataDefinition(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
+        CoverageAnalysisIO.AccessDataDefinition definition = new CoverageAnalysisIO.AccessDataDefinition(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity, raanLabel);
 
         if(this.coverageAnalysisIO.getAccessDataFile(definition).exists()){
             // The access data exists
@@ -336,7 +336,7 @@ public class CoverageAnalysis {
         }
 
         double mean = stat.getMean();
-        System.out.println(String.format("Mean revisit time %s", mean));
+        //System.out.println(String.format("Mean revisit time %s", mean));
         return mean;
     }
 
@@ -408,7 +408,7 @@ public class CoverageAnalysis {
 
                     PropagatorFactory pf=new PropagatorFactory(PropagatorType.NUMERICAL,propertiesPropagator);
                     Propagator prop=pf.createPropagator(SSO, 0);
-                    SpacecraftState s=prop.propagate(startDate, endDate);
+                    SpacecraftState s=prop.propagate(tempStartDate, tempEndDate);
                     KeplerianOrbit orbit=(KeplerianOrbit)s.getOrbit();
                     optRaan = orbit.getRightAscensionOfAscendingNode();
                 }

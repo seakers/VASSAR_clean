@@ -85,7 +85,7 @@ public class Orbit {
                 case "SSO":
                     // Calculate the inclination
                     double semimajoraxis = Constants.WGS84_EARTH_EQUATORIAL_RADIUS + altitudeNum;
-                    this.inclinationNum = OrbitWizard.SSOinc(semimajoraxis, 0.0); // [deg]
+                    this.inclinationNum = FastMath.toDegrees(OrbitWizard.SSOinc(semimajoraxis, 0.0)); // [deg]
 
                 default:
                     break;

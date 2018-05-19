@@ -60,12 +60,11 @@ public class CoverageAnalysisIO {
         if(this.binaryEncoding){
             return this.readAccessDataBinary(definition);
         }else{
-            //this.readAccessData();
+            return this.readAccessDataCSV(definition);
         }
-        return this.readAccessDataBinary(definition);
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) throws OrekitException {
+    public Map<TopocentricFrame, TimeIntervalArray> readAccessDataCSV(AccessDataDefinition definition) {
 
         File file = getAccessDataFile(definition);
 
@@ -78,6 +77,9 @@ public class CoverageAnalysisIO {
         List<Double> setTime = new ArrayList<>();
         
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+            // Skip first line
+            br.readLine();
 
             while ((line = br.readLine()) != null) {
 
@@ -225,7 +227,7 @@ public class CoverageAnalysisIO {
             exc.printStackTrace();
 
         } catch (IOException exc) {
-            System.out.println("Exc in writing binary access data: " + exc.getMessage());
+            System.out.println("Exc in reading binary access data: " + exc.getMessage());
             exc.printStackTrace();
 
         } catch (ClassNotFoundException exc) {
@@ -262,14 +264,20 @@ public class CoverageAnalysisIO {
         private int numSats;
         private int numPlanes;
         private int granularity;
+        private String raan;
 
-        public AccessDataDefinition(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity){
+        public AccessDataDefinition(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, int granularity, String raanLabel){
             this.fieldOfView = fieldOfView;
             this.inclination = inclination;
             this.altitude = altitude;
             this.numSats = numSats;
             this.numPlanes = numPlanes;
             this.granularity = granularity;
+            if(raanLabel == null){
+                this.raan = "NA";
+            }else{
+                this.raan = raanLabel;
+            }
         }
 
         @Override
@@ -286,6 +294,7 @@ public class CoverageAnalysisIO {
                     append(numSats).
                     append(numPlanes).
                     append(granularity).
+                    append(raan).
                     toHashCode();
         }
     }

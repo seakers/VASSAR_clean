@@ -7,9 +7,13 @@ import rbsa.eoss.CoverageAnalysis;
 import rbsa.eoss.CoverageAnalysisIO;
 import rbsa.eoss.Orbit;
 import seak.orekit.coverage.access.TimeIntervalArray;
+import seak.orekit.event.EventIntervalMerger;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.List;
+import java.util.ArrayList;
 
 public class CoverageAnalysisTest {
 
@@ -17,7 +21,7 @@ public class CoverageAnalysisTest {
 
         try {
             int coverageGranularity = 20;
-            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, false);
+            CoverageAnalysis coverageAnalysis = new CoverageAnalysis(1, coverageGranularity, true, true);
 
             String path = ".";
             Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
@@ -28,7 +32,7 @@ public class CoverageAnalysisTest {
             double[] latBounds = new double[]{FastMath.toRadians(-70), FastMath.toRadians(70)};
             double[] lonBounds = new double[]{FastMath.toRadians(-180), FastMath.toRadians(180)};
 
-            CoverageAnalysisMode mode = CoverageAnalysisMode.SINGLE;
+            CoverageAnalysisMode mode = CoverageAnalysisMode.MERGE;
 
             if(mode == CoverageAnalysisMode.SINGLE){
 
@@ -89,6 +93,50 @@ public class CoverageAnalysisTest {
                 long end = System.nanoTime();
                 System.out.println(String.format("Took %.4f sec in total", (end - start) / Math.pow(10, 9)));
 
+            }else if(mode == CoverageAnalysisMode.MERGE){
+
+                long start = System.nanoTime();
+
+                List<Map<TopocentricFrame, TimeIntervalArray>> fovEvents = new ArrayList<>();
+
+                String[] orbits = new String[]{"SSO-600-SSO-AM","LEO-600-polar-NA"};
+                Double[] fovs = new Double[]{35.0,55.0};
+
+                for(int i = 0; i < orbits.length; i++){
+
+                    Orbit orb = new Orbit(orbits[i], numPlanes, numSats);
+                    double fieldOfView = fovs[i]; // [deg]
+                    double inclination = orb.getInclinationNum(); // [deg]
+                    double altitude = orb.getAltitudeNum(); // [m]
+                    String raan = orb.getRaan();
+
+                    Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raan);
+                    fovEvents.add(accesses);
+
+                    double revisitTime = coverageAnalysis.getRevisitTime(accesses);
+
+                    StringJoiner sb = new StringJoiner("\n");
+                    sb.add("orbit: " + orb.toString() + " (inclination: " + orb.getInclinationNum() + ", altitude: " + orb.getAltitudeNum() + ")");
+                    sb.add("fov: " + fieldOfView);
+                    sb.add("revisitTime: " + revisitTime);
+                    System.out.println(sb.toString());
+                }
+
+
+                // Merge accesses to get the revisit time
+                Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>(fovEvents.get(0));
+
+                for(int i = 1; i < fovEvents.size(); ++i) {
+                    Map<TopocentricFrame, TimeIntervalArray> event = fovEvents.get(i);
+                    mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
+                }
+
+                double revisitTime = coverageAnalysis.getRevisitTime(mergedEvents);
+                System.out.println("Merged revisit time: " + revisitTime);
+
+                long end = System.nanoTime();
+                System.out.println(String.format("Took %.4f sec in total", (end - start) / Math.pow(10, 9)));
+
             }
 
         }catch (OrekitException e){
@@ -99,6 +147,7 @@ public class CoverageAnalysisTest {
 
     public enum CoverageAnalysisMode{
         SINGLE,
-        NESTED
+        NESTED,
+        MERGE,
     }
 }
