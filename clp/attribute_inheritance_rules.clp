@@ -46,21 +46,14 @@
 (deffunction get-instrument-peak-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (if (= (?result getSymbol ppp) nil) then
-        (return 0.0)
-     else
-        (return (?result getDouble ppp)))
+    (return (?result getDouble ppp))
     )
-
 
 
 (deffunction get-instrument-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)
-    (if (= (?result getSymbol ppp) nil) then
-            (return 0.0)
-         else
-            (return (?result getDouble ppp)))
+    (return (?result getDouble ppp))
     )
 
 (deffunction get-instrument-datarate (?instr)

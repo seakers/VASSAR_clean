@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
 
 public class PrintData {
     public static void main(String[] args) {
-        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2018-05-08_23-54-53_test.rs";
+        String filename = "/home/antoni/Programacio/daphne/VASSAR_clean/results/2018-05-18_12-21-10_test.rs";
         ResultCollection resultCollection = null;
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
@@ -25,15 +25,17 @@ public class PrintData {
         try (BufferedWriter outputWriter = new BufferedWriter(new FileWriter(csvFile))) {
             outputWriter.write("Inputs, Science, Cost\n");
             for (Result result: resultCollection.getResults()) {
-                String bitString = result.getArch().toBitString();
-                outputWriter.write(bitString.substring(1, bitString.length()-1));
-                outputWriter.write(",");
-                outputWriter.write(Double.toString(result.getScience()));
-                outputWriter.write(",");
-                outputWriter.write(Double.toString(result.getCost()));
-                outputWriter.newLine();
                 if (result.getScience() == 0.0) {
                     count++;
+                }
+                else {
+                    String bitString = result.getArch().toBitString();
+                    outputWriter.write(bitString.substring(1, bitString.length()-1));
+                    outputWriter.write(",");
+                    outputWriter.write(Double.toString(result.getScience()));
+                    outputWriter.write(",");
+                    outputWriter.write(Double.toString(result.getCost()));
+                    outputWriter.newLine();
                 }
             }
         }

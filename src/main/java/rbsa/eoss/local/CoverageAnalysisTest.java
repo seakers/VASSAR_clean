@@ -39,7 +39,7 @@ public class CoverageAnalysisTest {
                     long start = System.nanoTime();
                     //output the time
 
-                    Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                    Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, null);
                     double revisitTime1 = coverageAnalysis.getRevisitTime(accesses);
 
                     long t1 = System.nanoTime();
@@ -69,7 +69,7 @@ public class CoverageAnalysisTest {
                         double inclination = orb.getInclinationNum(); // [deg]
                         double altitude = orb.getAltitudeNum(); // [m]
 
-                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, null);
 
                         double revisitTime = coverageAnalysis.getRevisitTime(accesses);
 

@@ -89,6 +89,8 @@ public class CoverageAnalysis {
         //if running on a non-US machine, need the line below
         Locale.setDefault(new Locale("en", "US"));
 
+        this.cwd = System.getProperty("user.dir");
+
         // Load default dataset saved in the project root directory
         StringBuffer pathBuffer = new StringBuffer();
         
@@ -107,7 +109,7 @@ public class CoverageAnalysis {
 
         this.numThreads = numThreads;
         this.coverageGridGranularity = coverageGridGranularity;
-        this.gridStyle = EQUAL_AREA; 
+        this.gridStyle = EQUAL_AREA;
         this.saveAccessData = saveAccessData;
         this.binaryEncoding = binaryEncoding;
         this.coverageAnalysisIO = new CoverageAnalysisIO(this.binaryEncoding, utc);
@@ -151,7 +153,7 @@ public class CoverageAnalysis {
         this.reset();
     }
 
-    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes) throws OrekitException {
+    public Map<TopocentricFrame, TimeIntervalArray> getAccesses(double fieldOfView, double inclination, double altitude, int numSats, int numPlanes, String raanLabel) throws OrekitException {
 
         CoverageAnalysisIO.AccessDataDefinition definition = new CoverageAnalysisIO.AccessDataDefinition(fieldOfView, inclination, altitude, numSats, numPlanes, this.coverageGridGranularity);
 
@@ -162,7 +164,7 @@ public class CoverageAnalysis {
 
         }else{
             // Newly compute the accesses
-            Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+            Map<TopocentricFrame, TimeIntervalArray> fovEvents = this.computeAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
 
             if(this.saveAccessData){
                 this.coverageAnalysisIO.writeAccessData(definition, fovEvents);

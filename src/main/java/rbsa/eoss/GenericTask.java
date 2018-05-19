@@ -135,7 +135,7 @@ public class GenericTask implements Callable {
                     // For each fieldOfview-orbit combination
                     for(int i = 0; i < this.orbits.size(); i++){
                         Orbit orb = this.orbits.get(i);
-                        int fov = thefovs.get(i).intValue(r.getGlobalContext());
+                        int fov = thefovs.get(this.params.orbitIndexes.get(orb.toString())).intValue(r.getGlobalContext());
 
                         if(fov <= 0){
                             continue;
@@ -148,18 +148,21 @@ public class GenericTask implements Callable {
                         int numSats = Integer.parseInt(orb.getNum_sats_per_plane());
                         int numPlanes = Integer.parseInt(orb.getNplanes());
 
-                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes);
+                        String raanLabel = orb.getRaan();
+
+                        Map<TopocentricFrame, TimeIntervalArray> accesses = coverageAnalysis.getAccesses(fieldOfView, inclination, altitude, numSats, numPlanes, raanLabel);
                         fieldOfViewEvents.add(accesses);
                     }
 
                     // Merge accesses to get the revisit time
-                    Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>();
+                    Map<TopocentricFrame, TimeIntervalArray> mergedEvents = new HashMap<>(fieldOfViewEvents.get(0));
 
-                    for(Map<TopocentricFrame, TimeIntervalArray> event: fieldOfViewEvents){
+                    for(int i = 1; i < fieldOfViewEvents.size(); ++i) {
+                        Map<TopocentricFrame, TimeIntervalArray> event = fieldOfViewEvents.get(i);
                         mergedEvents = EventIntervalMerger.merge(mergedEvents, event, false);
                     }
 
-                    Double therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds);
+                    Double therevtimes = coverageAnalysis.getRevisitTime(mergedEvents, latBounds, lonBounds)/3600;
 
                     String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
                             + "(avg-revisit-time-global# " + therevtimes + ") "
@@ -267,9 +270,13 @@ public class GenericTask implements Callable {
                 //result.setExplanations(fulls);
             }
         }
-        catch (Exception e) {
+        catch (JessException e) {
             System.out.println(e.getMessage() + " " + e.getClass() + " ");
             e.printStackTrace();
+        }
+        catch (OrekitException e) {
+            e.printStackTrace();
+            throw new Error();
         }
         return result;
     }

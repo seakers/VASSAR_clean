@@ -101,9 +101,9 @@ public class Params {
     public HashMap<Integer, String> rulesIDtoNameMap;
     public HashMap<String, Integer> rulesNametoIDMap;
     public HashMap<String, HashMap<String, ArrayList<String>>> requirementRules;
-    public HashMap<String, String> measurementsToSubobjectives;
-    public HashMap<String, String> measurementsToObjectives;
-    public HashMap<String, String> measurementsToPanels;
+    public HashMap<String, ArrayList<String>> measurementsToSubobjectives;
+    public HashMap<String, ArrayList<String>> measurementsToObjectives;
+    public HashMap<String, ArrayList<String>> measurementsToPanels;
     public ArrayList<String> parameterList;
     public ArrayList<ArrayList<ArrayList<String>>> subobjectives;
     public HashMap<String, ArrayList<String>> instrumentsToMeasurements;
@@ -120,11 +120,12 @@ public class Params {
     public int numPanels;
     public ArrayList<Double> panelWeights;
     public ArrayList<String> panelNames;
+    public HashMap<String, String> panelDescriptions;
     public ArrayList<ArrayList<Double>> objWeights;
     public ArrayList<ArrayList<String>> objNames;
+    public HashMap<String, String> objectiveDescriptions;
     public ArrayList<Integer> numObjectivesPerPanel;
     public ArrayList<ArrayList<ArrayList<Double>>> subobjWeights;
-    public HashMap<String, String> objectiveDescriptions;
     public HashMap<String, String> subobjDescriptions;
     public HashMap<String, Double> subobjWeightsMap;
 

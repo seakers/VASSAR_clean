@@ -26,6 +26,10 @@ import java.util.concurrent.*;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.pubsub.StatefulRedisPubSubConnection;
 import io.lettuce.core.pubsub.api.sync.RedisPubSubCommands;
+import jess.Fact;
+import jess.JessException;
+import jess.Value;
+import jess.ValueVector;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.core.*;
 import org.moeaframework.core.comparator.ChainedComparator;
@@ -35,9 +39,7 @@ import org.moeaframework.core.operator.binary.BitFlip;
 import org.moeaframework.core.variable.BinaryVariable;
 import org.moeaframework.util.TypedProperties;
 import rbsa.eoss.*;
-import rbsa.eoss.javaInterface.BinaryInputArchitecture;
-import rbsa.eoss.javaInterface.ObjectiveSatisfaction;
-import rbsa.eoss.javaInterface.VASSARInterface;
+import rbsa.eoss.javaInterface.*;
 import rbsa.eoss.local.Params;
 import seak.architecture.operators.IntegerUM;
 
@@ -385,6 +387,192 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         ArchitectureEvaluator.getInstance().clear();
         pool.shutdown();
         System.out.println("DONE");
+    }
+
+    @Override
+    public List<SubscoreInformation> getArchScienceInformation(BinaryInputArchitecture arch) {
+        List<SubscoreInformation> information = new ArrayList<>();
+
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+        for (int i = 0; i < params.panelNames.size(); ++i) {
+            List<SubscoreInformation> objectivesInformation = new ArrayList<>();
+            for (int j = 0; j < params.objNames.get(i).size(); ++j) {
+                List<SubscoreInformation> subobjectivesInformation = new ArrayList<>();
+                for (int k = 0; k < params.subobjectives.get(i).get(j).size(); ++k) {
+                    String subobjName = params.subobjectives.get(i).get(j).get(k);
+                    subobjectivesInformation.add(new SubscoreInformation(
+                            subobjName,
+                            params.subobjDescriptions.get(subobjName),
+                            result.getSubobjectiveScores().get(i).get(j).get(k),
+                            params.subobjWeights.get(i).get(j).get(k),
+                            null));
+                }
+                String objName = params.objNames.get(i).get(j);
+                objectivesInformation.add(new SubscoreInformation(
+                        objName,
+                        params.objectiveDescriptions.get(objName),
+                        result.getObjectiveScores().get(i).get(j),
+                        params.objWeights.get(i).get(j),
+                        subobjectivesInformation));
+            }
+            String panelName = params.panelNames.get(i);
+            information.add(new SubscoreInformation(
+                    panelName,
+                    params.panelDescriptions.get(panelName),
+                    result.getPanelScores().get(i),
+                    params.panelWeights.get(i),
+                    objectivesInformation));
+        }
+
+        return information;
+    }
+
+    @Override
+    public List<MissionCostInformation> getArchCostInformation(BinaryInputArchitecture arch) {
+        List<MissionCostInformation> information = new ArrayList<>();
+
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+
+        // Auxiliary arrays
+        String[] massBudgetSlots = { "adapter-mass", "propulsion-mass#", "structure-mass#", "avionics-mass#",
+                "ADCS-mass#", "EPS-mass#", "propellant-mass-injection", "propellant-mass-ADCS", "thermal-mass#",
+                "payload-mass#" };
+        String[] powerBudgetSlots = { "payload-peak-power#", "satellite-BOL-power#" };
+        String[] costBudgetSlots = { "payload-cost#", "bus-cost#", "launch-cost#", "program-cost#",
+                "IAT-cost#", "operations-cost#" };
+        double[] costMultipliers = { 1e-3, 1e-3, 1.0, 1e-3, 1e-3, 1e-3 };
+        for (Fact costFact: result.getCostFacts()) {
+            try {
+                String missionName = costFact.getSlotValue("Name").stringValue(null);
+                String launchVehicle = costFact.getSlotValue("launch-vehicle").stringValue(null);
+                HashMap<String, Double> massBudget = new HashMap<>();
+                for (String massSlot: massBudgetSlots) {
+                    Double value = costFact.getSlotValue(massSlot).floatValue(null);
+                    massBudget.put(massSlot, value);
+                }
+                HashMap<String, Double> powerBudget = new HashMap<>();
+                for (String powerSlot: powerBudgetSlots) {
+                    Double value = costFact.getSlotValue(powerSlot).floatValue(null);
+                    powerBudget.put(powerSlot, value);
+                }
+                HashMap<String, Double> costBudget = new HashMap<>();
+                Double sumCost = 0.0;
+                for (int i = 0; i < costBudgetSlots.length; ++i) {
+                    String costSlot = costBudgetSlots[i];
+                    Double multiplier = costMultipliers[i];
+                    Double value = costFact.getSlotValue(costSlot).floatValue(null);
+                    sumCost += value*multiplier;
+                    costBudget.put(costSlot, value*multiplier);
+                }
+                Double totalCost = costFact.getSlotValue("mission-cost#").floatValue(null);
+                costBudget.put("others", totalCost - sumCost);
+                information.add(new MissionCostInformation(
+                        missionName,
+                        launchVehicle,
+                        massBudget,
+                        powerBudget,
+                        costBudget));
+            }
+            catch (JessException e) {
+                System.err.println(e.toString());
+            }
+        }
+
+        return information;
+    }
+
+    @Override
+    public SubobjectiveDetails getSubscoreDetails(BinaryInputArchitecture arch, String subobj) {
+        // Get a result with all the important facts
+        String bitString = "";
+        for (Boolean b: arch.inputs) {
+            bitString += b ? "1" : "0";
+        }
+        // Generate a new architecture
+        Architecture architecture = new Architecture(bitString, 1);
+        architecture.setEvalMode("DEBUG");
+        Result result = AE.evaluateArchitecture(architecture, "Slow");
+
+
+        String parameter = params.subobjectivesToMeasurements.get(subobj);
+
+        // Obtain list of attributes for this parameter
+        ArrayList<String> attrNames = new ArrayList<>();
+        HashMap<String, ArrayList<String>> requirementRules = params.requirementRules.get(subobj);
+        attrNames.addAll(requirementRules.keySet());
+
+        // Loop to get rows of details for each data product
+        ArrayList<List<String>> attrValues = new ArrayList<>();
+        ArrayList<Double> scores = new ArrayList<>();
+        ArrayList<String> takenBy = new ArrayList<>();
+        ArrayList<List<String>> justifications = new ArrayList<>();
+        for (Fact explanation: result.getExplanations().get(subobj)) {
+            try {
+                // Try to find the requirement fact!
+                int measurementId = explanation.getSlotValue("requirement-id").intValue(null);
+                if (measurementId == -1) {
+                    continue;
+                }
+                Fact measurement = null;
+                for (Fact capability: result.getCapabilities()) {
+                    if (capability.getFactId() == measurementId) {
+                        measurement = capability;
+                        break;
+                    }
+                }
+                // Start by putting all attribute values into list
+                ArrayList<String> rowValues = new ArrayList<>();
+                for (String attrName: attrNames) {
+                    // Check type and convert to String if needed
+                    Value attrValue = measurement.getSlotValue(attrName);
+                    rowValues.add(attrValue.toString());
+                }
+                // Get information from explanation fact
+                Double score = explanation.getSlotValue("satisfaction").floatValue(null);
+                String satisfiedBy = explanation.getSlotValue("satisfied-by").stringValue(null);
+                ArrayList<String> rowJustifications = new ArrayList<>();
+                ValueVector reasons = explanation.getSlotValue("reasons").listValue(null);
+                for (int i = 0; i < reasons.size(); ++i) {
+                    String reason = reasons.get(i).stringValue(null);
+                    if (!reason.equals("N-A")) {
+                        rowJustifications.add(reason);
+                    }
+                }
+
+                // Put everything in their lists
+                attrValues.add(rowValues);
+                scores.add(score);
+                takenBy.add(satisfiedBy);
+                justifications.add(rowJustifications);
+            }
+            catch (JessException e) {
+                System.err.println(e.toString());
+            }
+        }
+
+        return new SubobjectiveDetails(
+                parameter,
+                attrNames,
+                attrValues,
+                scores,
+                takenBy,
+                justifications);
     }
 }
 

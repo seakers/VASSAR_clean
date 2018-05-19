@@ -55,7 +55,7 @@ public class JavaServer {
 
   public static void simple(VASSARInterface.Processor processor) {
     try {
-        TServerTransport serverTransport = new TServerSocket(9090);
+        TServerTransport serverTransport = new TServerSocket(9093);
         TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
 
         System.out.println("Starting the VASSAR Java Server...");
