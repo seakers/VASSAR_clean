@@ -822,9 +822,9 @@ public class JessInitializer {
             call2 += ")";
             r.eval(call2);
 
-            params.measurementsToSubobjectives = getInverseHashMapStringString(params.subobjectivesToMeasurements);
-            params.measurementsToObjectives = getInverseHashMapStringArrayList(params.objectivesToMeasurements);
-            params.measurementsToPanels = getInverseHashMapStringArrayList(params.panelsToMeasurements);
+            params.measurementsToSubobjectives = getInverseHashMapSSToSAL(params.subobjectivesToMeasurements);
+            params.measurementsToObjectives = getInverseHashMapSALToSAL(params.objectivesToMeasurements);
+            params.measurementsToPanels = getInverseHashMapSALToSAL(params.panelsToMeasurements);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -982,9 +982,9 @@ public class JessInitializer {
             call2 += ")";
             r.eval(call2);
 
-            params.measurementsToSubobjectives = getInverseHashMapStringString(params.subobjectivesToMeasurements);
-            params.measurementsToObjectives = getInverseHashMapStringArrayList(params.objectivesToMeasurements);
-            params.measurementsToPanels = getInverseHashMapStringArrayList(params.panelsToMeasurements);
+            params.measurementsToSubobjectives = getInverseHashMapSSToSAL(params.subobjectivesToMeasurements);
+            params.measurementsToObjectives = getInverseHashMapSALToSAL(params.objectivesToMeasurements);
+            params.measurementsToPanels = getInverseHashMapSALToSAL(params.panelsToMeasurements);
         }
         catch (Exception e) {
             System.out.println("EXC in loadFuzzyRequirementRulesAttribs " + e.getMessage());
@@ -1059,61 +1059,52 @@ public class JessInitializer {
                 r.eval(call2);
                 params.instrumentsToMeasurements.put(instrument, meas);
                 for (String measurement: meas) {
-                    String subobjective = params.measurementsToSubobjectives.get(measurement);
-                    if (subobj.indexOf(subobjective) == -1) {
-                        subobj.add(subobjective);
+                    ArrayList<String> subobjectives = params.measurementsToSubobjectives.get(measurement);
+                    if (subobjectives != null) {
+                        for (String subobjective: subobjectives) {
+                            if (subobj.indexOf(subobjective) == -1) {
+                                subobj.add(subobjective);
+                            }
+                        }
                     }
                 }
                 params.instrumentsToSubobjectives.put(instrument, subobj);
                 for (String measurement: meas) {
-                    String objective = params.measurementsToObjectives.get(measurement);
-                    if (obj.indexOf(objective) == -1) {
-                        obj.add(objective);
+                    ArrayList<String> objectives = params.measurementsToObjectives.get(measurement);
+                    if (objectives != null) {
+                        for (String objective : objectives) {
+                            if (obj.indexOf(objective) == -1) {
+                                obj.add(objective);
+                            }
+                        }
                     }
                 }
                 params.instrumentsToObjectives.put(instrument, obj);
                 for (String measurement: meas) {
-                    String panel = params.measurementsToPanels.get(measurement);
-                    if (pan.indexOf(panel) == -1) {
-                        pan.add(panel);
+                    ArrayList<String> panels = params.measurementsToPanels.get(measurement);
+                    if (panels != null) {
+                        for (String panel: panels) {
+                            if (pan.indexOf(panel) == -1) {
+                                pan.add(panel);
+                            }
+                        }
                     }
                 }
                 params.instrumentsToPanels.put(instrument, pan);
             }
-            params.measurementsToInstruments = getInverseHashMap(params.instrumentsToMeasurements);
-            params.subobjectivesToInstruments = getInverseHashMap(params.instrumentsToMeasurements);
-            params.objectivesToInstruments = getInverseHashMap(params.instrumentsToObjectives);
-            params.panelsToInstruments = getInverseHashMap(params.instrumentsToPanels);
+            params.measurementsToInstruments = getInverseHashMapSALToSAL(params.instrumentsToMeasurements);
+            params.subobjectivesToInstruments = getInverseHashMapSALToSAL(params.instrumentsToMeasurements);
+            params.objectivesToInstruments = getInverseHashMapSALToSAL(params.instrumentsToObjectives);
+            params.panelsToInstruments = getInverseHashMapSALToSAL(params.instrumentsToPanels);
         }
         catch (Exception e) {
             System.out.println("EXC in loadCapabilityRules " + e.getMessage());
             e.printStackTrace();
+            throw new Error();
         }
     }
 
-    private HashMap<String, String> getInverseHashMapStringString(HashMap<String, String> hm) {
-        HashMap<String, String> inverse = new HashMap<>();
-        for (Map.Entry<String, String> entr: hm.entrySet()) {
-            String key = entr.getKey();
-            String val = entr.getValue();
-            inverse.put(val, key);
-        }
-        return inverse;
-    }
-
-    private HashMap<String, String> getInverseHashMapStringArrayList(HashMap<String, ArrayList<String>> hm) {
-        HashMap<String, String> inverse = new HashMap<>();
-        for (Map.Entry<String, ArrayList<String>> entr: hm.entrySet()) {
-            String key = entr.getKey();
-            ArrayList<String> vals = entr.getValue();
-            for (String val: vals) {
-                inverse.put(val, key);
-            }
-        }
-        return inverse;
-    }
-
-    private HashMap<String, ArrayList<String>> getInverseHashMap(HashMap<String, ArrayList<String>> hm) {
+    private HashMap<String, ArrayList<String>> getInverseHashMapSALToSAL(HashMap<String, ArrayList<String>> hm) {
         HashMap<String, ArrayList<String>> inverse = new HashMap<>();
         for (Map.Entry<String, ArrayList<String>> entr: hm.entrySet()) {
             String key = entr.getKey();
@@ -1136,19 +1127,41 @@ public class JessInitializer {
         return inverse;
     }
 
+    private HashMap<String, ArrayList<String>> getInverseHashMapSSToSAL(HashMap<String, String> hm) {
+        HashMap<String, ArrayList<String>> inverse = new HashMap<>();
+        for (Map.Entry<String, String> entr: hm.entrySet()) {
+            String key = entr.getKey();
+            String val = entr.getValue();
+            if (inverse.containsKey(val)) {
+                ArrayList<String> list = inverse.get(val);
+                if (!list.contains(key)) {
+                    list.add(key);
+                    inverse.put(val, list);
+                }
+            }
+            else {
+                ArrayList<String> list = new ArrayList<>();
+                list.add(key);
+                inverse.put(val, list);
+            }
+        }
+        return inverse;
+    }
+
     private void loadSynergyRules(Rete r, String clp) {
         try {
             r.batch(clp);
-            for(Map.Entry<String, String> es: params.measurementsToSubobjectives.entrySet()) {
+            for(Map.Entry<String, ArrayList<String>> es: params.measurementsToSubobjectives.entrySet()) {
                 String meas = es.getKey();
-                String subobj = es.getValue();
-                String call = "(defrule SYNERGIES::stop-improving-" + meas.substring(1, meas.indexOf(" ")) + " ";
-                String ruleName = "SYNERGIES::stop-improving-" + meas.substring(1, meas.indexOf(" "));
-                call += "?fsat <- (REASONING::fully-satisfied (subobjective " + subobj + ") (factHistory ?fh))";
-                call += " => (assert (REASONING::stop-improving (Measurement " + meas + ")"
-                        + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?fsat getFactId) \"}\"))"
-                        + ")))";
-                r.eval(call);
+                for (String subobj: es.getValue()) {
+                    String call = "(defrule SYNERGIES::stop-improving-" + meas.substring(1, meas.indexOf(" ")) + " ";
+                    String ruleName = "SYNERGIES::stop-improving-" + meas.substring(1, meas.indexOf(" "));
+                    call += "?fsat <- (REASONING::fully-satisfied (subobjective " + subobj + ") (factHistory ?fh))";
+                    call += " => (assert (REASONING::stop-improving (Measurement " + meas + ")"
+                            + "(factHistory (str-cat \"{R\" (?*rulesMap* get "+ruleName+") \" A\" (call ?fsat getFactId) \"}\"))"
+                            + ")))";
+                    r.eval(call);
+                }
             }
         }
         catch (Exception e) {
