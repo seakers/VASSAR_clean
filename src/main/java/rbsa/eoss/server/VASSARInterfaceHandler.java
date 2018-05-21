@@ -528,13 +528,16 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         architecture.setEvalMode("DEBUG");
         Result result = AE.evaluateArchitecture(architecture, "Slow");
 
-
         String parameter = params.subobjectivesToMeasurements.get(subobj);
 
         // Obtain list of attributes for this parameter
         ArrayList<String> attrNames = new ArrayList<>();
         HashMap<String, ArrayList<String>> requirementRules = params.requirementRules.get(subobj);
         attrNames.addAll(requirementRules.keySet());
+        HashMap<String, Integer> numDecimals = new HashMap<>();
+        numDecimals.put("Horizontal-Spatial-Resolution#", 0);
+        numDecimals.put("Temporal-resolution#", 0);
+        numDecimals.put("Swath#", 0);
 
         // Loop to get rows of details for each data product
         ArrayList<List<String>> attrValues = new ArrayList<>();
@@ -558,9 +561,26 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 // Start by putting all attribute values into list
                 ArrayList<String> rowValues = new ArrayList<>();
                 for (String attrName: attrNames) {
+                    String attrType = requirementRules.get(attrName).get(0);
                     // Check type and convert to String if needed
                     Value attrValue = measurement.getSlotValue(attrName);
-                    rowValues.add(attrValue.toString());
+                    switch (attrType) {
+                        case "SIB":
+                        case "LIB": {
+                            Double value = attrValue.floatValue(null);
+                            double scale = 100;
+                            if (numDecimals.containsKey(attrName)) {
+                                scale = Math.pow(10, numDecimals.get(attrName));
+                            }
+                            value = Math.round(value * scale) / scale;
+                            rowValues.add(value.toString());
+                            break;
+                        }
+                        default: {
+                            rowValues.add(attrValue.toString());
+                            break;
+                        }
+                    }
                 }
                 // Get information from explanation fact
                 Double score = explanation.getSlotValue("satisfaction").floatValue(null);
