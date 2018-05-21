@@ -460,6 +460,18 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         for (Fact costFact: result.getCostFacts()) {
             try {
                 String missionName = costFact.getSlotValue("Name").stringValue(null);
+                // Obtain the list of instruments for this orbit
+                List<String> orbitList = Arrays.asList(params.orbitList);
+                List<String> instrList = Arrays.asList(params.instrumentList);
+                ArrayList<String> payloads = new ArrayList<>();
+                int loopStart = params.numInstr*orbitList.indexOf(missionName);
+                int loopEnd = loopStart + params.numInstr;
+                for (int i = params.numInstr*orbitList.indexOf(missionName); i < loopEnd; ++i) {
+                    if (arch.inputs.get(i)) {
+                        payloads.add(instrList.get(i-loopStart));
+                    }
+                }
+                // Get the launch vehicle name
                 String launchVehicle = costFact.getSlotValue("launch-vehicle").stringValue(null);
                 HashMap<String, Double> massBudget = new HashMap<>();
                 for (String massSlot: massBudgetSlots) {
@@ -487,6 +499,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 Double totalMass = costFact.getSlotValue("satellite-launch-mass").floatValue(null);
                 information.add(new MissionCostInformation(
                         missionName,
+                        payloads,
                         launchVehicle,
                         totalMass,
                         totalPower,
