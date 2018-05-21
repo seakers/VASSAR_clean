@@ -156,6 +156,8 @@ public class GenericTask implements Callable {
 
                     Double therevtimes;
 
+                    recalculateRevisitTime = true;
+
                     if(recalculateRevisitTime){
                         // Do the re-calculation of the revisit times
 
@@ -213,7 +215,6 @@ public class GenericTask implements Callable {
                         //String key = arch.getNumSatellites() + " x " + m.stringArraytoStringWith(fovs, "  ");
                         String key = m.stringArraytoStringWith(fovs, "  ");
                         therevtimes = params.revtimes.get(key); //key: 'Global' or 'US', value Double
-
                     }
 
                     String call = "(assert (ASSIMILATION2::UPDATE-REV-TIME (parameter " +  param + ") "
