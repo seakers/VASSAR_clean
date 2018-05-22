@@ -56,7 +56,7 @@ public class RunGA {
         //initialize problem
         Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
         ArchitectureEvaluator.getInstance().init(8);
-        Problem problem = new InstrumentAssignment(new int[]{1});
+        Problem problem = new InstrumentAssignment(new int[]{1}, ArchitectureEvaluator.getInstance());
 
         initialization = new RandomInitialization(problem, popSize);
 

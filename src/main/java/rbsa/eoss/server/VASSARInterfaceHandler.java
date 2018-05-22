@@ -334,8 +334,9 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         //initialize problem
         Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
-        ArchitectureEvaluator.getInstance().init(1);
-        Problem problem = new InstrumentAssignment(new int[]{1});
+        ArchitectureEvaluator gaArchEval = ArchitectureEvaluator.getNewInstance();
+        gaArchEval.init(1);
+        Problem problem = new InstrumentAssignment(new int[]{1}, gaArchEval);
 
         // Create a solution for each input arch in the dataset
         List<Solution> initial = new ArrayList<>(dataset.size());
@@ -384,7 +385,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         pubsubConnection.close();
 
         redisClient.shutdown();
-        ArchitectureEvaluator.getInstance().clear();
+        gaArchEval.clear();
         pool.shutdown();
         System.out.println("DONE");
     }
@@ -460,6 +461,18 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         for (Fact costFact: result.getCostFacts()) {
             try {
                 String missionName = costFact.getSlotValue("Name").stringValue(null);
+                // Obtain the list of instruments for this orbit
+                List<String> orbitList = Arrays.asList(params.orbitList);
+                List<String> instrList = Arrays.asList(params.instrumentList);
+                ArrayList<String> payloads = new ArrayList<>();
+                int loopStart = params.numInstr*orbitList.indexOf(missionName);
+                int loopEnd = loopStart + params.numInstr;
+                for (int i = params.numInstr*orbitList.indexOf(missionName); i < loopEnd; ++i) {
+                    if (arch.inputs.get(i)) {
+                        payloads.add(instrList.get(i-loopStart));
+                    }
+                }
+                // Get the launch vehicle name
                 String launchVehicle = costFact.getSlotValue("launch-vehicle").stringValue(null);
                 HashMap<String, Double> massBudget = new HashMap<>();
                 for (String massSlot: massBudgetSlots) {
@@ -467,8 +480,10 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                     massBudget.put(massSlot, value);
                 }
                 HashMap<String, Double> powerBudget = new HashMap<>();
+                Double totalPower = 0.0;
                 for (String powerSlot: powerBudgetSlots) {
                     Double value = costFact.getSlotValue(powerSlot).floatValue(null);
+                    totalPower += value;
                     powerBudget.put(powerSlot, value);
                 }
                 HashMap<String, Double> costBudget = new HashMap<>();
@@ -482,9 +497,14 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 }
                 Double totalCost = costFact.getSlotValue("mission-cost#").floatValue(null);
                 costBudget.put("others", totalCost - sumCost);
+                Double totalMass = costFact.getSlotValue("satellite-launch-mass").floatValue(null);
                 information.add(new MissionCostInformation(
                         missionName,
+                        payloads,
                         launchVehicle,
+                        totalMass,
+                        totalPower,
+                        totalCost,
                         massBudget,
                         powerBudget,
                         costBudget));
@@ -509,13 +529,16 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         architecture.setEvalMode("DEBUG");
         Result result = AE.evaluateArchitecture(architecture, "Slow");
 
-
         String parameter = params.subobjectivesToMeasurements.get(subobj);
 
         // Obtain list of attributes for this parameter
         ArrayList<String> attrNames = new ArrayList<>();
         HashMap<String, ArrayList<String>> requirementRules = params.requirementRules.get(subobj);
         attrNames.addAll(requirementRules.keySet());
+        HashMap<String, Integer> numDecimals = new HashMap<>();
+        numDecimals.put("Horizontal-Spatial-Resolution#", 0);
+        numDecimals.put("Temporal-resolution#", 0);
+        numDecimals.put("Swath#", 0);
 
         // Loop to get rows of details for each data product
         ArrayList<List<String>> attrValues = new ArrayList<>();
@@ -539,9 +562,26 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
                 // Start by putting all attribute values into list
                 ArrayList<String> rowValues = new ArrayList<>();
                 for (String attrName: attrNames) {
+                    String attrType = requirementRules.get(attrName).get(0);
                     // Check type and convert to String if needed
                     Value attrValue = measurement.getSlotValue(attrName);
-                    rowValues.add(attrValue.toString());
+                    switch (attrType) {
+                        case "SIB":
+                        case "LIB": {
+                            Double value = attrValue.floatValue(null);
+                            double scale = 100;
+                            if (numDecimals.containsKey(attrName)) {
+                                scale = Math.pow(10, numDecimals.get(attrName));
+                            }
+                            value = Math.round(value * scale) / scale;
+                            rowValues.add(value.toString());
+                            break;
+                        }
+                        default: {
+                            rowValues.add(attrValue.toString());
+                            break;
+                        }
+                    }
                 }
                 // Get information from explanation fact
                 Double score = explanation.getSlotValue("satisfaction").floatValue(null);

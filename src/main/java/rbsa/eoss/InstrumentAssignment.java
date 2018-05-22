@@ -31,22 +31,12 @@ public class InstrumentAssignment extends AbstractProblem implements SystemArchi
     private final double packingEffThreshold = 0.4; //[kg]
 
     /**
-     * Constructor for the problem. Assumes that only one satellite can occupy
-     * each candidate orbit
-     *
-     * @param path
-     */
-    public InstrumentAssignment(String path) {
-        this(new int[]{1});
-    }
-
-    /**
      * @param alternativesForNumberOfSatellites
      */
-    public InstrumentAssignment(int[] alternativesForNumberOfSatellites) {
+    public InstrumentAssignment(int[] alternativesForNumberOfSatellites, ArchitectureEvaluator archEval) {
         //2 decisions for Choosing and Assigning Patterns
         super(1 + Params.getInstance().numInstr*Params.getInstance().numOrbits, 2);
-        this.eval = ArchitectureEvaluator.getInstance();
+        this.eval = archEval;
         this.alternativesForNumberOfSatellites = alternativesForNumberOfSatellites;
     }
 
