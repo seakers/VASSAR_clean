@@ -334,8 +334,9 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
 
         //initialize problem
         Params.initInstance(path, "CRISP-ATTRIBUTES", "test","normal","");
-        ArchitectureEvaluator.getInstance().init(1);
-        Problem problem = new InstrumentAssignment(new int[]{1});
+        ArchitectureEvaluator gaArchEval = ArchitectureEvaluator.getNewInstance();
+        gaArchEval.init(1);
+        Problem problem = new InstrumentAssignment(new int[]{1}, gaArchEval);
 
         // Create a solution for each input arch in the dataset
         List<Solution> initial = new ArrayList<>(dataset.size());
@@ -384,7 +385,7 @@ public class VASSARInterfaceHandler implements VASSARInterface.Iface {
         pubsubConnection.close();
 
         redisClient.shutdown();
-        ArchitectureEvaluator.getInstance().clear();
+        gaArchEval.clear();
         pool.shutdown();
         System.out.println("DONE");
     }
