@@ -442,7 +442,7 @@
 ;	(assert (SYNERGIES::cross-registered (measurements (str-cat $?m1 $?m2))))
 ;)
 
-(defrule CAPABILITIES::cross-register-measurements-from-cross-registered-instruments
+(defrule CAPABILITIES-CROSS-REGISTER::cross-register-measurements-from-cross-registered-instruments
 	(SYNERGIES::cross-registered-instruments (instruments $?ins))
 	?c <- (accumulate (bind ?str "")                        ;; initializer
                 (bind ?str (str-cat ?str " " $?m1))                    ;; action
@@ -453,4 +453,6 @@
 	(assert (SYNERGIES::cross-registered (measurements (explode$ ?c)) (degree-of-cross-registration spacecraft)))
 	;(printout t ?c crlf)
 )
+
+
 

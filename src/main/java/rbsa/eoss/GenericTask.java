@@ -102,10 +102,10 @@ public class GenericTask implements Callable {
             r.setFocus("CAPABILITIES-REMOVE-OVERLAPS");
             r.run();
 
-            r.setFocus("CAPABILITIES-CROSS-REGISTER");
+            r.setFocus("CAPABILITIES-GENERATE");
             r.run();
 
-            r.setFocus("CAPABILITIES-GENERATE");
+            r.setFocus("CAPABILITIES-CROSS-REGISTER");
             r.run();
 
             r.setFocus("CAPABILITIES-UPDATE");
