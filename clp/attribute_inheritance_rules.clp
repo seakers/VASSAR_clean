@@ -50,7 +50,6 @@
     )
 
 
-
 (deffunction get-instrument-power (?instr)
     (bind ?result (run-query* search-instrument-by-name ?instr))
     (?result next)

@@ -3,4 +3,9 @@ build/
 build.xml
 manifest.mf
 nbproject/
+.idea/
+/target/
+/out/
+*.iml
+.gradle
 
